@@ -35,7 +35,7 @@ db.sqlite3
 media
 staticfiles
 
-# If you are using Docker:
+# Docker:
 *.env
 Dockerfile
 docker-compose.yml
