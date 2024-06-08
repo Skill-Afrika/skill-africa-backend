@@ -29,32 +29,4 @@ This will guide you on getting started on the Skill Africa Backend part
  ```bash
  python manage.py runsever
  ```
- 6. Create accounts app using and add the app to the project INSTALLED_APPS in skill_africa/settings.py
- ```bash
- python manage.py createapp accounts
- INSTALLED_APPS =
- [
-    ...
-    'accounts',
-]
- ```
- 7. Create superuser to access the django admin and follow the instructions
- ```bash
- python manage.py createsuperuser
- ```
- 8. Set up CORS Header to allow Cross-Origin Resources Sharing. Install django-cors-header and add it to your INSTALLED_APP and configure middleware in the settings.py
- ```bash
- INSTALLED_APP = 
- [
-    ...,
-    'corsheader',
- ]
- MIDDLEWARE = 
- [
-    'corsheaders.middleware.CorsMiddleware'
- ]
- CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',  # Add your frontend URL here
-]
-```
-
+ 
