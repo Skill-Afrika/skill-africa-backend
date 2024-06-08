@@ -58,7 +58,9 @@ pip-delete-this-directory.txt
 .env.production
 .env.test
 .venv/
+.vscode
 venv/
+env/
 ENV/
 env.bak/
 venv.bak/
