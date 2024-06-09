@@ -17,11 +17,9 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
-from accounts import url as accountUrls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('api.urls')),
-    path('account/', include(accountUrls))
+    path('api/v1/', include('skill_africa.urls-v1')), # For seperating diffrent versions of the api in the future. For adding url paths please do so in urls-v1.py
 ]
 
