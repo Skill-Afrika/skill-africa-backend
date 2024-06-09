@@ -43,8 +43,6 @@ INSTALLED_APPS = [
     'drf_spectacular_sidecar', 
     'api',
     'corsheaders',
-    'accounts',
-    
 ]
 
 SITE_ID = 1
@@ -177,4 +175,3 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-AUTH_USER_MODEL = 'accounts.CustomUser'
