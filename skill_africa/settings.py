@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'drf_spectacular_sidecar', 
     'api',
+    'profile_management',
     'corsheaders',
 ]
 
@@ -72,6 +73,7 @@ REST_AUTH = {
     'JWT_AUTH_COOKIE': 'access-token',
     'JWT_AUTH_REFRESH_COOKIE': 'refresh-token',
     'JWT_AUTH_HTTPONLY': False,
+    'REGISTER_SERIALIZER': 'dj_rest_auth.registration.serializers.RegisterSerializer',
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
