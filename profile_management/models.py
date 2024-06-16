@@ -1,12 +1,8 @@
 import uuid
 from django.db import models
-from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.contrib.auth.models import AbstractUser
 
-class CustomPermission(Permission):
-    class Meta:
-        proxy = True
-        
-class CustomUser(AbstractUser):
+class User(AbstractUser):
     ROLE_CHOICES = [
         ('freelancer', 'Freelancer'),
         ('sponsor', 'Sponsor'),
@@ -17,28 +13,12 @@ class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='freelancer')
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
-    
-    groups = models.ManyToManyField(
-        Group,
-        verbose_name=('groups'),
-        blank=True,
-        related_name='custom_user_set',
-        related_query_name='custom_user',
-    )
-
-    user_permissions = models.ManyToManyField(
-        CustomPermission,
-        verbose_name=('user permissions'),
-        blank=True,
-        related_name='custom_user_set',
-        related_query_name='custom_user',
-    )
 
     def __str__(self):
         return self.username
 
 class ProfileBase(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     class Meta:
         abstract = True

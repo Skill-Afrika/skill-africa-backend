@@ -3,16 +3,15 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
-from .serializers import FreelanceSerializer, SponsorSerializer, AdminSerializer
+from .serializers import FreelanceSerializer, SponsorSerializer, AdminSerializer, RegisterSerializer
 from django.conf import settings
 from dj_rest_auth.registration.views import RegisterView
-from  dj_rest_auth.registration.serializers import RegisterSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema
 
 # Function for registering users
-def registerUser(self, request):
-    serializer = RegisterSerializer(data=request.data)
+def registerUser(self, request, role):
+    serializer = RegisterSerializer(data={**request.data, "role": role})
     serializer.is_valid(raise_exception=True)
 
     user = RegisterView.perform_create(self, serializer)
@@ -68,7 +67,7 @@ class FreelanceRegistrationView(APIView):
     )
     def post(self, request):
         try:
-            user, data = registerUser(self, request) # Register user
+            user, data = registerUser(self, request, "freelancer") # Register user
             print(user.id)
             serializer = FreelanceSerializer(data={}) # Then create a profile for the user
             serializer.is_valid(raise_exception=True)
@@ -129,7 +128,7 @@ class SponsorRegistrationView(APIView):
     )
     def post(self, request):
         try:
-            user, data = registerUser(self, request) # Register user
+            user, data = registerUser(self, request, "sponsor") # Register user
             serializer = SponsorSerializer(data={}) # Then create a profile for the user
             serializer.is_valid(raise_exception=True)
             serializer.create(validated_data={'user': user})
@@ -189,7 +188,7 @@ class AdminRegistrationView(APIView):
     )
     def post(self, request):
         try:
-            user, data = registerUser(self, request) # Register user
+            user, data = registerUser(self, request, "admin") # Register user
             serializer = AdminSerializer(data={}) # Then create a profile for the user
             serializer.is_valid(raise_exception=True)
             serializer.create(validated_data={'user': user})
@@ -204,3 +203,8 @@ class AdminRegistrationView(APIView):
         else:
             response = Response(status=status.HTTP_204_NO_CONTENT)
         return response
+    
+
+
+
+    
