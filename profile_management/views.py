@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -68,9 +69,10 @@ class FreelanceRegistrationView(APIView):
     def post(self, request):
         try:
             user, data = registerUser(self, request) # Register user
-            serializer = FreelanceSerializer(data={'user': user}) # Then create a profile for the user
+            print(user.id)
+            serializer = FreelanceSerializer(data={}) # Then create a profile for the user
             serializer.is_valid(raise_exception=True)
-            serializer.save()
+            serializer.create(validated_data={'user': user})
         except ValidationError as e:
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
@@ -128,9 +130,9 @@ class SponsorRegistrationView(APIView):
     def post(self, request):
         try:
             user, data = registerUser(self, request) # Register user
-            serializer = SponsorSerializer(data={'user': user}) # Then create a profile for the user
+            serializer = SponsorSerializer(data={}) # Then create a profile for the user
             serializer.is_valid(raise_exception=True)
-            serializer.save()
+            serializer.create(validated_data={'user': user})
         except ValidationError as e:
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
@@ -188,9 +190,9 @@ class AdminRegistrationView(APIView):
     def post(self, request):
         try:
             user, data = registerUser(self, request) # Register user
-            serializer = AdminSerializer(data={'user': user}) # Then create a profile for the user
+            serializer = AdminSerializer(data={}) # Then create a profile for the user
             serializer.is_valid(raise_exception=True)
-            serializer.save()
+            serializer.create(validated_data={'user': user})
         except ValidationError as e:
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 

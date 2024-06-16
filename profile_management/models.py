@@ -1,18 +1,55 @@
-from django.contrib.auth.models import User
+import uuid
 from django.db import models
-from django.contrib.auth.models import Group
-# from .permissions import FREELANCE_PERMISSIONS, SPONSOR_PERMISSIONS, ADMIN_PERMISSIONS
+from django.contrib.auth.models import AbstractUser, Group, Permission
 
-class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+class CustomPermission(Permission):
+    class Meta:
+        proxy = True
+        
+class CustomUser(AbstractUser):
+    ROLE_CHOICES = [
+        ('freelancer', 'Freelancer'),
+        ('sponsor', 'Sponsor'),
+        ('admin', 'Admin'),
+    ]
 
-class FreelancerProfile(Profile):
+    username = models.CharField(max_length=255, unique=True)
+    email = models.EmailField(unique=True)
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='freelancer')
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    
+    groups = models.ManyToManyField(
+        Group,
+        verbose_name=('groups'),
+        blank=True,
+        related_name='custom_user_set',
+        related_query_name='custom_user',
+    )
+
+    user_permissions = models.ManyToManyField(
+        CustomPermission,
+        verbose_name=('user permissions'),
+        blank=True,
+        related_name='custom_user_set',
+        related_query_name='custom_user',
+    )
+
+    def __str__(self):
+        return self.username
+
+class ProfileBase(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+
+    class Meta:
+        abstract = True
+
+class FreelancerProfile(ProfileBase):
     pass
     
-class SponsorProfile(Profile):
+class SponsorProfile(ProfileBase):
     pass
 
-class AdminProfile(Profile):
+class AdminProfile(ProfileBase):
     pass
     # Newly Registered admin should be approved by existing Admin first to get admin privileges.
     # Or alternatively we can make admin registeration a protected route. So that only an admin can register a new admin account.
