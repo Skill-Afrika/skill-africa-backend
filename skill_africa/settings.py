@@ -74,6 +74,7 @@ REST_AUTH = {
     'JWT_AUTH_REFRESH_COOKIE': 'refresh-token',
     'JWT_AUTH_HTTPONLY': False,
     'REGISTER_SERIALIZER': 'profile_management.serializers.RegisterSerializer',
+    'LOGIN_SERIALIZER': 'profile_management.serializers.LoginSerializer',
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
