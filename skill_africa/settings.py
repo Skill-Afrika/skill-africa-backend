@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'drf_spectacular_sidecar', 
     'api',
     'corsheaders',
+    'NewsManagement',
 ]
 
 SITE_ID = 1
