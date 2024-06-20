@@ -23,21 +23,6 @@ class ProfileBase(models.Model):
     class Meta:
         abstract = True
 
-class FreelancerProfile(ProfileBase):
-    pass
-    
-class SponsorProfile(ProfileBase):
-    pass
-
-class AdminProfile(ProfileBase):
-    pass
-    # Newly Registered admin should be approved by existing Admin first to get admin privileges.
-    # Or alternatively we can make admin registeration a protected route. So that only an admin can register a new admin account.
-    # Todo: Disscuss the above with team lead
-    # verified = models.BooleanField(default=False) 
-
-
-
 
 
 

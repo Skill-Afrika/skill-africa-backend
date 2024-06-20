@@ -1,10 +1,9 @@
 from rest_framework import serializers, exceptions
-from .models import FreelancerProfile, SponsorProfile, AdminProfile, User
+from .models import User
 from django.contrib.auth import get_user_model, authenticate
 from allauth.account.adapter import get_adapter
 from allauth.socialaccount.models import EmailAddress
 from allauth.account.utils import setup_user_email
-from django.core.exceptions import ValidationError as DjangoValidationError
 from django.urls import exceptions as url_exceptions
 
 User = get_user_model()
@@ -159,32 +158,3 @@ class LoginSerializer(serializers.Serializer):
         self.validate_auth_user_status(user)
         attrs['user'] = user
         return attrs
-
-class FreelanceSerializer(serializers.ModelSerializer):
-    """
-    Serializer for freelancers.
-    """
-    class Meta:
-        model = FreelancerProfile
-        fields = '__all__'
-        depth = 1
-
-
-class SponsorSerializer(serializers.ModelSerializer):
-    """
-    Serializer for sponsors.
-    """
-    class Meta:
-        model = SponsorProfile
-        fields = '__all__'
-        depth = 1
-
-
-class AdminSerializer(serializers.ModelSerializer):
-    """
-    Serializer for admin.
-    """
-    class Meta:
-        model = AdminProfile
-        fields = '__all__'
-        depth = 1

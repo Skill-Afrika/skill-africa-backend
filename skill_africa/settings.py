@@ -43,6 +43,9 @@ INSTALLED_APPS = [
     'drf_spectacular_sidecar', 
     'api',
     'profile_management',
+    'freelancer_management',
+    'sponsor_management',
+    'admin_management',
     'corsheaders',
 ]
 
