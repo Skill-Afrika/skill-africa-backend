@@ -7,3 +7,8 @@ class Post(models.Model):
     title= models.CharField(verbose_name='titles',max_length=200)
     content=models.TextField()
     createdAt=models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return  self.id
+    
+    
