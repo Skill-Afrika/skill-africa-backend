@@ -3,6 +3,9 @@ from .models import NewsFeed
 
 
 class PostSerializer(serializers.ModelSerializer):
+     """
+    Serializer for News Feed
+    """
      class Meta:
           model = NewsFeed
           fields ='__all__'                               
