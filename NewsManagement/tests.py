@@ -1,16 +1,16 @@
 from django.test import TestCase,SimpleTestCase
-from .models import Post
+from .models import NewsFeed
 from .views import PostDetails,PostListCreate
 from rest_framework.test import APIClient
 from rest_framework import status
 from django.urls import reverse,resolve  
- 
+import uuid 
                                                                                                      
 #testing models
 
 class PostModelTest(TestCase):
     def setUp(self):
-        self.post = Post.objects.create(
+        self.post = NewsFeed.objects.create(
             title = 'Test Post',
             content = 'This is a test post'
         )
@@ -18,7 +18,7 @@ class PostModelTest(TestCase):
     def test_post_creation(self):
         self.assertEqual(self.post.title, 'Test Post')
         self.assertEqual(self.post.content, 'This is a test post')
-        self.assertIsInstance(self.post, Post) 
+        self.assertIsInstance(self.post, NewsFeed) 
 
     def test_post_str(self):
         self.assertEqual(str(self.post.title), 'Test Post')     
@@ -28,9 +28,9 @@ class PostModelTest(TestCase):
 class PostViewTests(TestCase):
     def setUp(self):
         
-        self.post = Post.objects.create()
+        self.post = NewsFeed.objects.create()
         self.client = APIClient()
-        self.post = Post.objects.create(
+        self.post = NewsFeed.objects.create(
                 title= 'test post',
                 content = 'this is a test post'
     )                                                                            
@@ -48,7 +48,7 @@ class PostViewTests(TestCase):
     def test_post_create(self):
         response=self.client.post(self.url_list_create,self.post_data,format='json')
         self.assertEqual(response.status_code,status.HTTP_201_CREATED)   
-        self.assertEqual(Post.objects.get(id=response.data['id']).title, self.post_data['title'])
+        self.assertEqual(NewsFeed.objects.get(id=response.data['id']).title, self.post_data['title'])
 
     def test_update_post(self):
         updated_post={
@@ -71,11 +71,14 @@ class PostViewTests(TestCase):
 #Testing url
 
 class TestUrl(SimpleTestCase):
+    def setUp(self):
+        self.post_id =uuid.uuid4()
+        
     def test_post_url_is_resolved(self):
         url=reverse('post_list_create')
         self.assertEqual(resolve(url).func.view_class,PostListCreate)
 
     def test_post_details(self):
-        url=reverse('post_details') 
+        url=reverse('post_details',self.post_id) 
         self.assertEqual(resolve(url).func.view_class, PostDetails)    
                                                  

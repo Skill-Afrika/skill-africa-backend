@@ -1,9 +1,9 @@
 from rest_framework import serializers
-from .models import Post
+from .models import NewsFeed
 
 
 class PostSerializer(serializers.ModelSerializer):
      class Meta:
-          model = Post
+          model = NewsFeed
           fields ='__all__'                               
                                                                                                                
