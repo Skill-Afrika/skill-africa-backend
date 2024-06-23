@@ -2,20 +2,21 @@ from datetime import timedelta
 from pathlib import Path
 import dj_database_url
 import os
+from dotenv import load_dotenv
+
+# Load .env values
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Get .env values
-from dotenv import dotenv_values
-
-config = dotenv_values(".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config["SECRET_KEY"]
+SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key")
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -86,8 +87,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # SimpleJWT Settings
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=int(config['ACCESS_TOKEN_LIFETIME_HOURS'])),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=int(config['REFRESH_TOKEN_LIFETIME_DAYS'])),
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=int(os.getenv('ACCESS_TOKEN_LIFETIME_HOURS'))),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=int(os.getenv('REFRESH_TOKEN_LIFETIME_DAYS'))),
     "ROTATE_REFRESH_TOKENS": False,
 }
 
@@ -143,9 +144,8 @@ if DEBUG:
     }
 else:
     DATABASES = {
-        'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
+        'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
     }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
