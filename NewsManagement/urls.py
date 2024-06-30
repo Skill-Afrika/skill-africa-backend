@@ -1,7 +1,8 @@
 from django.urls import path
-from .views import PostListCreate,PostDetails
+from .views import NewsFeedCreateView,NewsFeedListView,NewsFeedDetails
 
 urlpatterns = [
-    path('posts/', PostListCreate.as_view(), name = 'post_list_create'),
-    path('posts/<uuid:id>/', PostDetails.as_view(), name='post_details'), 
- ]                                                             
+    path('newsfeed/',NewsFeedListView.as_view(),name='NewsFeed_list'),
+    path('newsfeed/create/',NewsFeedCreateView.as_view(),name='NewsFeed_create'),
+    path('newsfeed/<str:pk>/', NewsFeedDetails.as_view(),name='NewsFeed_details'),
+]                                                              

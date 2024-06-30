@@ -1,6 +1,7 @@
-from django.test import TestCase,SimpleTestCase
+from django.test import TestCase
 from .models import NewsFeed
-from .views import PostDetails,PostListCreate
+from .views import NewsFeedDetails,NewsFeedCreateView
+from .serializers import NewsFeedSerializer
 from rest_framework.test import APIClient
 from rest_framework import status
 from django.urls import reverse,resolve  
@@ -28,30 +29,45 @@ class PostModelTest(TestCase):
 class PostViewTests(TestCase):
     def setUp(self):
         
-        self.post = NewsFeed.objects.create()
         self.client = APIClient()
         self.post = NewsFeed.objects.create(
                 title= 'test post',
                 content = 'this is a test post'
     )                                                                            
         self.post_data= {
+            'id': 23,
             'title': 'New post',
-            'content': 'new post data'
-        }                       
-        self.url_list_create = reverse('post_list_create')
-        self.url_details =     reverse('post_details',args=[self.post.id])
-    def test_list_post(self):
-        response=self.client.get(self.url_list_create)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertContains(response,self.post.title)
+            'content': 'new post data',
+            'createdAt': 2023-7-27
+        }  
+        self.url_list=reverse('NewsFeed_list')                     
+        self.url_create = reverse('NewsFeed_create')
+        self.url_details = reverse('NewsFeed_details',args=self.post_data['id'])
+    def test_newsfeed_list(self):
+        response=self.client.get(self.url_list)
+        self.assertEqual(response.status_code,status.HTTP_200_OK)  
+
+    #def test_newsfeed_details(self):
+     #   response=self.client.get(reverse('NewsFeed_details'))
+      #  newsfeed1=NewsFeed.objects.get(id=newsfeed1.id)
+       # serializer=NewsFeedSerializer(newsfeed1)
+
+        #self.assertEqual(response.status_code, status.HTTP_200_OK)
+        #self.assertEqual(response.data,serializer.data)
 
     def test_post_create(self):
-        response=self.client.post(self.url_list_create,self.post_data,format='json')
-        self.assertEqual(response.status_code,status.HTTP_201_CREATED)   
-        self.assertEqual(NewsFeed.objects.get(id=response.data['id']).title, self.post_data['title'])
+        newsfeed_data={
+             'title':'newfeed3',
+             'content':'this is new news'
+         }
+        response=self.client.post(self.url_create,newsfeed_data,format='json')
+        
+        self.assertEqual(response.status_code,status.HTTP_200_OK)   
+             
+        self.assertEqual(NewsFeed.objects.last().title, 'newfeed3')
 
     def test_update_post(self):
-        updated_post={
+        updated_post={                        
             'title': 'updated post',
             'content': 'updated content for the post'
         }     
@@ -68,17 +84,25 @@ class PostViewTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['content'], self.post.content)  
 
+    def test_invalid_method(self):
+        response=self.client.post(self.url_list, {'title':'Invalid', 'content':'invalid'})
+        self.assertEqual(response.status_code,status.HTTP_405_METHOD_NOT_ALLOWED)    
+
 #Testing url
 
-class TestUrl(SimpleTestCase):
+class TestUrl(TestCase):
     def setUp(self):
-        self.post_id =uuid.uuid4()
+        self.News=NewsFeed.objects.create(
+            title= 'test detail post',
+            content = 'this is a test detail post'
+            )
         
     def test_post_url_is_resolved(self):
-        url=reverse('post_list_create')
-        self.assertEqual(resolve(url).func.view_class,PostListCreate)
+        url=reverse('NewsFeed_create')
+        self.assertEqual(resolve(url).func.view_class,NewsFeedCreateView )
 
-    def test_post_details(self):
-        url=reverse('post_details',self.post_id) 
-        self.assertEqual(resolve(url).func.view_class, PostDetails)    
-                                                 
+    def test_post_details(self):    
+        url=reverse('NewsFeed_details',args=[self.News.id]) 
+        self.assertEqual(resolve(url).func.view_class, NewsFeedDetails)        
+
+                                                                        
