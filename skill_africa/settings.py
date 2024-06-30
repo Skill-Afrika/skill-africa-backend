@@ -19,7 +19,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG")
 
 ALLOWED_HOSTS = ['backend-api-fq3o.onrender.com', 'localhost', '127.0.0.1']
 
