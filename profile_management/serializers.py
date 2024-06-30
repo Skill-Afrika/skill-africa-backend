@@ -77,84 +77,152 @@ class JWTSerializer(serializers.Serializer):
     def get_user(self, obj):
         user_data = UserDetailsSerializer(obj['user'], context=self.context).data
         return user_data
-
 class LoginSerializer(serializers.Serializer):
+    """
+    Serializer for user login that supports authentication using either
+    username or email along with a password.
+    """
     username = serializers.CharField(required=False)
     email = serializers.CharField(required=False)
     password = serializers.CharField()
 
     def authenticate(self, email=None, username=None, password=None):
-        # make sure the appropriate parameters are passed
-        if not email and not username:
-            msg = ('Must include either "username" or "email".')
-            raise exceptions.ValidationError(msg)
-        if not password:
-            msg = ('Must include "password".')
-            raise exceptions.ValidationError(msg)
-        
-        # Get user depending on the parameter passed in
-        if email:
-            user = User.objects.get(email=email)
-        elif username:
-            user = User.objects.get(username=username)
+        """
+        Authenticates a user using email or username and password.
 
-        # Ensure password is correct
+        Args:
+            email (str, optional): The email of the user.
+            username (str, optional): The username of the user.
+            password (str): The password of the user.
+
+        Raises:
+            ValidationError: If neither email nor username is provided,
+                             or if the password is not provided,
+                             or if the user does not exist,
+                             or if the password is incorrect.
+
+        Returns:
+            User: The authenticated user instance.
+        """
+        if not email and not username:
+            raise exceptions.ValidationError('Must include either "username" or "email".')
+        if not password:
+            raise exceptions.ValidationError('Must include "password".')
+
+        try:
+            if email:
+                user = User.objects.get(email=email)
+            elif username:
+                user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise exceptions.ValidationError('User with the provided email/username does not exist.')
+
         credentials = {"username": user.username, "password": password}
-        check = authenticate(request=self.context["request"], **credentials)
-        if not check:
-            msg = ('Incorrect Password.')
-            raise exceptions.ValidationError(msg)
-        return user
+        authenticated_user = authenticate(request=self.context.get("request"), **credentials)
+        if not authenticated_user:
+            raise exceptions.ValidationError('Incorrect password.')
+        return authenticated_user
 
     def _validate_username_email(self, username, email, password):
+        """
+        Validates the user credentials using either username or email.
+
+        Args:
+            username (str, optional): The username of the user.
+            email (str, optional): The email of the user.
+            password (str): The password of the user.
+
+        Raises:
+            ValidationError: If neither username nor email is provided,
+                             or if the password is not provided,
+                             or if the authentication fails.
+
+        Returns:
+            User: The authenticated user instance.
+        """
         if email and password:
             user = self.authenticate(email=email, password=password)
         elif username and password:
             user = self.authenticate(username=username, password=password)
         else:
-            msg = ('Must include either "username" or "email" and "password".')
-            raise exceptions.ValidationError(msg)
+            raise exceptions.ValidationError('Must include either "username" or "email" and "password".')
 
         return user
 
     def get_auth_user_using_allauth(self, username, email, password):
-        # Authentication through either username or email
+        """
+        Authenticates the user using either username or email and password
+        through the allauth authentication scheme.
+
+        Args:
+            username (str, optional): The username of the user.
+            email (str, optional): The email of the user.
+            password (str): The password of the user.
+
+        Returns:
+            User: The authenticated user instance.
+        """
         return self._validate_username_email(username, email, password)
 
     def get_auth_user(self, username, email, password):
         """
-        Retrieve the auth user from given POST payload by using
-        `allauth` auth scheme.
+        Retrieves the authenticated user using the provided credentials.
 
-        Returns the authenticated user instance if credentials are correct,
-        else `None` will be returned
+        Args:
+            username (str, optional): The username of the user.
+            email (str, optional): The email of the user.
+            password (str): The password of the user.
+
+        Raises:
+            ValidationError: If the authentication fails.
+
+        Returns:
+            User: The authenticated user instance, or None if authentication fails.
         """
-        # When `is_active` of a user is set to False, allauth tries to return template html
-        # which does not exist. This is the solution for it. See issue #264.
         try:
             return self.get_auth_user_using_allauth(username, email, password)
-        except url_exceptions.NoReverseMatch:
-            msg = ('Unable to log in with provided credentials.')
-            raise exceptions.ValidationError(msg)
+        except exceptions.ValidationError as e:
+            raise e
+        except Exception as e:
+            raise exceptions.ValidationError('Unable to log in with provided credentials.')
 
     @staticmethod
     def validate_auth_user_status(user):
+        """
+        Validates the status of the authenticated user.
+
+        Args:
+            user (User): The authenticated user instance.
+
+        Raises:
+            ValidationError: If the user account is disabled.
+        """
         if not user.is_active:
-            msg = ('User account is disabled.')
-            raise exceptions.ValidationError(msg)
+            raise exceptions.ValidationError('User account is disabled.')
 
     def validate(self, attrs):
+        """
+        Validates the authentication credentials provided in the request.
+
+        Args:
+            attrs (dict): The request data containing username/email and password.
+
+        Raises:
+            ValidationError: If the authentication fails.
+
+        Returns:
+            dict: The validated data including the authenticated user instance.
+        """
         username = attrs.get('username')
         email = attrs.get('email')
         password = attrs.get('password')
         user = self.get_auth_user(username, email, password)
 
         if not user:
-            msg = ('Unable to log in with provided credentials.')
-            raise exceptions.ValidationError(msg)
+            raise exceptions.ValidationError('Unable to log in with provided credentials.')
 
-        # TODO: Check that the user has verified their mail. Later in the project
-        # Did we get back an active user?
+        # TODO: Check that the user has verified their email. (to be implemented later)
+
         self.validate_auth_user_status(user)
         attrs['user'] = user
         return attrs
