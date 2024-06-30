@@ -6,7 +6,6 @@ from allauth.socialaccount.models import EmailAddress
 from allauth.account.utils import setup_user_email
 from django.urls import exceptions as url_exceptions
 
-from django.contrib.auth import authenticate
 
 User = get_user_model()
 
@@ -79,7 +78,6 @@ class JWTSerializer(serializers.Serializer):
     def get_user(self, obj):
         user_data = UserDetailsSerializer(obj['user'], context=self.context).data
         return user_data
-    
 
 class LoginSerializer(serializers.Serializer):
     """
@@ -114,10 +112,14 @@ class LoginSerializer(serializers.Serializer):
             msg = 'Must include "password".'
             raise exceptions.ValidationError(msg)
         
-        if email:
-            user = User.objects.get(email=email)
-        elif username:
-            user = User.objects.get(username=username)
+        try:
+            if email:
+                user = User.objects.get(email=email)
+            elif username:
+                user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise exceptions.ValidationError('User with the provided email/username does not exist.')
+
 
         credentials = {"username": user.username, "password": password}
         check = authenticate(request=self.context["request"], **credentials)
