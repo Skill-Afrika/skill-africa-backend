@@ -42,6 +42,10 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'drf_spectacular_sidecar', 
     'api',
+    'profile_management',
+    'freelancer_management',
+    'sponsor_management',
+    'admin_management',
     'corsheaders',
     'NewsManagement',
 ]
@@ -73,6 +77,8 @@ REST_AUTH = {
     'JWT_AUTH_COOKIE': 'access-token',
     'JWT_AUTH_REFRESH_COOKIE': 'refresh-token',
     'JWT_AUTH_HTTPONLY': False,
+    'REGISTER_SERIALIZER': 'profile_management.serializers.RegisterSerializer',
+    'LOGIN_SERIALIZER': 'profile_management.serializers.LoginSerializer',
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -176,3 +182,4 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTH_USER_MODEL = 'profile_management.User'
