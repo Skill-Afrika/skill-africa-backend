@@ -57,7 +57,7 @@ class LoginView(APIView):
     def get_response(self):
         serializer_class = self.response_serializer
         access_token_expiration = (datetime.now() + timedelta(hours=int(os.getenv('ACCESS_TOKEN_LIFETIME_HOURS'))))
-        refresh_token_expiration = (datetime.now() + timedelta(days=int(OS.getenv('REFRESH_TOKEN_LIFETIME_DAYS'))))
+        refresh_token_expiration = (datetime.now() + timedelta(days=int(os.getenv('REFRESH_TOKEN_LIFETIME_DAYS'))))
 
         data = {
             'user': self.user,
