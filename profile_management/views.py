@@ -10,9 +10,15 @@ from .serializers import (
     JWTSerializer, 
     LoginSerializer
 )
+import os
 
 # Get .env values
 from dotenv import dotenv_values
+
+from dotenv import load_dotenv
+
+# Load .env values
+load_dotenv()
 
 config = dotenv_values(".env")
 
@@ -50,8 +56,8 @@ class LoginView(APIView):
 
     def get_response(self):
         serializer_class = self.response_serializer
-        access_token_expiration = (datetime.now() + timedelta(hours=int(config['ACCESS_TOKEN_LIFETIME_HOURS'])))
-        refresh_token_expiration = (datetime.now() + timedelta(days=int(config['REFRESH_TOKEN_LIFETIME_DAYS'])))
+        access_token_expiration = (datetime.now() + timedelta(hours=int(os.getenv('ACCESS_TOKEN_LIFETIME_HOURS'))))
+        refresh_token_expiration = (datetime.now() + timedelta(days=int(OS.getenv('REFRESH_TOKEN_LIFETIME_DAYS'))))
 
         data = {
             'user': self.user,
