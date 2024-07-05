@@ -1,11 +1,19 @@
 from datetime import datetime, timedelta
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from dj_rest_auth.registration.views import RegisterView
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema
-from .serializers import RegisterSerializer, JWTSerializer, LoginSerializer
+from .serializers import (
+    RegisterSerializer,
+    JWTSerializer,
+    LoginSerializer,
+    LogoutSerializer,
+)
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import RefreshToken
 
 # Get .env values
 from dotenv import dotenv_values
@@ -122,7 +130,113 @@ class LoginView(APIView):
 
 
 class LogoutView(APIView):
-    pass
+    """
+    Log's user out and deletes the Token object
+    assigned to the current User object.
+
+    Accepts/Returns nothing.
+    """
+
+    @extend_schema(
+        summary="Logout",
+        description="Log out the user by deleting their authentication token and blacklisting the refresh token.",
+        request=LogoutSerializer,
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "detail": {"type": "string"},
+                },
+                "examples": [
+                    {
+                        "name": "Success Response",
+                        "value": {"detail": "Successfully logged out."},
+                    },
+                ],
+            },
+            401: {
+                "type": "object",
+                "properties": {
+                    "detail": {"type": "string"},
+                },
+                "examples": [
+                    {
+                        "name": "Error Response (No Refresh Token)",
+                        "value": {
+                            "detail": "Refresh token was not included in request data."
+                        },
+                    },
+                ],
+            },
+            500: {
+                "type": "object",
+                "properties": {
+                    "detail": {"type": "string"},
+                },
+                "examples": [
+                    {
+                        "name": "Error Response (Invalid/Expired Token)",
+                        "value": {"detail": "Token is invalid or expired"},
+                    },
+                ],
+            },
+        },
+    )
+    def post(self, request):
+        print(
+            ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>."
+        )
+        if "my_cookie" in request.COOKIES:
+            # Cookie is set
+            cookie_value = request.COOKIES["my_cookie"]
+            print(f"Cookie value: {cookie_value}")
+        else:
+            # Cookie is not set
+            print("Cookie is not set")
+        print(
+            ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>."
+        )
+        return self.logout(request)
+
+    def logout(self, request):
+        try:
+            request.user.auth_token.delete()
+        except (AttributeError, ObjectDoesNotExist):
+            pass
+
+        response = Response(
+            {"detail": "Successfully logged out."},
+            status=status.HTTP_200_OK,
+        )
+
+        # add refresh token to blacklist
+        try:
+            token: RefreshToken = RefreshToken(None)
+            try:
+                token = RefreshToken(request.data["refresh"])
+            except KeyError:
+                response.data = {
+                    "detail": "Refresh token was not included in request data."
+                }
+                response.status_code = status.HTTP_401_UNAUTHORIZED
+
+            token.blacklist()
+        except (TokenError, AttributeError, TypeError) as error:
+            if hasattr(error, "args"):
+                if (
+                    "Token is blacklisted" in error.args
+                    or "Token is invalid or expired" in error.args
+                ):
+                    response.data = {"detail": error.args[0]}
+                    response.status_code = status.HTTP_401_UNAUTHORIZED
+                else:
+                    response.data = {"detail": "An error has occurred."}
+                    response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+
+            else:
+                response.data = {"detail": "An error has occurred."}
+                response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        return response
 
 
 class PasswordChange(APIView):
