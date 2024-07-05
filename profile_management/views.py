@@ -82,7 +82,7 @@ class LoginView(APIView):
                     'refresh': {'type': 'string'},
                     'access': {'type': 'string'},
                     'access_expiration': {'type': 'string'},
-                    'refresh_expiration': {'type': 'string'},
+                    'refresh_expiration': {'type': 'string'},         
                 },
                  'examples': [
                     {
