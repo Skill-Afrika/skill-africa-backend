@@ -199,11 +199,7 @@ class LogoutView(APIView):
         return self.logout(request)
 
     def logout(self, request):
-        try:
-            request.user.auth_token.delete()
-        except (AttributeError, ObjectDoesNotExist):
-            pass
-
+        print(request.data)
         response = Response(
             {"detail": "Successfully logged out."},
             status=status.HTTP_200_OK,
@@ -222,7 +218,10 @@ class LogoutView(APIView):
 
             token.blacklist()
         except (TokenError, AttributeError, TypeError) as error:
+            print("in try")
+            print(error)
             if hasattr(error, "args"):
+                print("in try 2")
                 if (
                     "Token is blacklisted" in error.args
                     or "Token is invalid or expired" in error.args
@@ -237,26 +236,6 @@ class LogoutView(APIView):
                 response.data = {"detail": "An error has occurred."}
                 response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
         return response
-
-
-class PasswordChange(APIView):
-    pass
-
-
-class PasswordReset(APIView):
-    pass
-
-
-class PasswordResetConfirm(APIView):
-    pass
-
-
-class ResendEmail(APIView):
-    pass
-
-
-class VerifyEmail(APIView):
-    pass
 
 
 class ConfirmEmail(APIView):
