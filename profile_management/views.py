@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -183,23 +182,9 @@ class LogoutView(APIView):
         },
     )
     def post(self, request):
-        print(
-            ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>."
-        )
-        if "my_cookie" in request.COOKIES:
-            # Cookie is set
-            cookie_value = request.COOKIES["my_cookie"]
-            print(f"Cookie value: {cookie_value}")
-        else:
-            # Cookie is not set
-            print("Cookie is not set")
-        print(
-            ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>."
-        )
         return self.logout(request)
 
     def logout(self, request):
-        print(request.data)
         response = Response(
             {"detail": "Successfully logged out."},
             status=status.HTTP_200_OK,
@@ -218,10 +203,7 @@ class LogoutView(APIView):
 
             token.blacklist()
         except (TokenError, AttributeError, TypeError) as error:
-            print("in try")
-            print(error)
             if hasattr(error, "args"):
-                print("in try 2")
                 if (
                     "Token is blacklisted" in error.args
                     or "Token is invalid or expired" in error.args

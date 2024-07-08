@@ -5,6 +5,8 @@ from allauth.account.adapter import get_adapter
 from allauth.socialaccount.models import EmailAddress
 from allauth.account.utils import setup_user_email
 from django.urls import exceptions as url_exceptions
+from dj_rest_auth.serializers import PasswordResetSerializer
+from django.contrib.auth.forms import PasswordResetForm
 
 User = get_user_model()
 
@@ -251,3 +253,10 @@ class LoginSerializer(serializers.Serializer):
 
 class LogoutSerializer(serializers.Serializer):
     refresh = serializers.CharField(required=True)
+
+
+class CustomPasswordResetSerializer(PasswordResetSerializer):
+    # @property
+    # def password_reset_form_class(self):
+    #     return PasswordResetForm
+    pass

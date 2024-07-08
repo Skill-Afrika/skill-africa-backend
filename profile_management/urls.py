@@ -16,14 +16,14 @@ urlpatterns = [
     path("logout/", LogoutView.as_view(), name="logout_view"),
     path("password/change/", PasswordChangeView.as_view(), name="password_change"),
     path(
-        "password/reset/<str:key>",
+        "password/reset/",
         PasswordResetView.as_view(),
-        name="password_reset_confirm",
+        name="password_reset",
     ),
     path(
-        "password/confirm/",
+        "password/reset/<str:key>",
         PasswordResetConfirmView.as_view(),
-        name="password_confirm",
+        name="password_reset_confirm",
     ),
     path(
         r"confirm/email/<str:key>",
