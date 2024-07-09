@@ -1,12 +1,15 @@
 from rest_framework import serializers, exceptions
-from .models import User
+from .models import User, PasswordOTP
 from django.contrib.auth import get_user_model, authenticate
 from allauth.account.adapter import get_adapter
 from allauth.socialaccount.models import EmailAddress
 from allauth.account.utils import setup_user_email
-from django.urls import exceptions as url_exceptions
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
 
 User = get_user_model()
+
 
 class DocumentationRegisterSerializer(serializers.ModelSerializer):
     """
@@ -15,17 +18,19 @@ class DocumentationRegisterSerializer(serializers.ModelSerializer):
     function properly but i do not want devs passing in roles
     when using the end point.
     """
+
     class Meta:
         model = User
-        fields = ['username', 'email', 'password']
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ["username", "email", "password"]
+        extra_kwargs = {"password": {"write_only": True}}
+
 
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'role']
-        extra_kwargs = {'password': {'write_only': True}}
-    
+        fields = ["username", "email", "password", "role"]
+        extra_kwargs = {"password": {"write_only": True}}
+
     def validate_username(self, username):
         username = get_adapter().clean_username(username)
         return username
@@ -34,7 +39,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         email = get_adapter().clean_email(email)
         if email and EmailAddress.objects.is_verified(email):
             raise serializers.ValidationError(
-                ('A user is already registered with this e-mail address.'),
+                ("A user is already registered with this e-mail address."),
             )
         return email
 
@@ -43,10 +48,10 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def get_cleaned_data(self):
         return {
-            'username': self.validated_data.get('username', ''),
-            'password': self.validated_data.get('password', ''),
-            'email': self.validated_data.get('email', ''),
-            'role': self.validated_data.get('role', ''),
+            "username": self.validated_data.get("username", ""),
+            "password": self.validated_data.get("password", ""),
+            "email": self.validated_data.get("email", ""),
+            "role": self.validated_data.get("role", ""),
         }
 
     def save(self, request):
@@ -59,15 +64,18 @@ class RegisterSerializer(serializers.ModelSerializer):
         setup_user_email(request, user, [])
         return user
 
+
 class UserDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['uuid', 'username', 'email', 'role']
+        fields = ["uuid", "username", "email", "role"]
+
 
 class JWTSerializer(serializers.Serializer):
     """
     Serializer for JWT authentication.
     """
+
     access = serializers.CharField()
     refresh = serializers.CharField()
     user = serializers.SerializerMethodField()
@@ -75,13 +83,16 @@ class JWTSerializer(serializers.Serializer):
     refresh_expiration = serializers.DateTimeField()
 
     def get_user(self, obj):
-        user_data = UserDetailsSerializer(obj['user'], context=self.context).data
+        user_data = UserDetailsSerializer(obj["user"], context=self.context).data
         return user_data
+
+
 class LoginSerializer(serializers.Serializer):
     """
     Serializer for user login that supports authentication using either
     username or email along with a password.
     """
+
     username = serializers.CharField(required=False)
     email = serializers.CharField(required=False)
     password = serializers.CharField()
@@ -105,7 +116,9 @@ class LoginSerializer(serializers.Serializer):
             User: The authenticated user instance.
         """
         if not email and not username:
-            raise exceptions.ValidationError('Must include either "username" or "email".')
+            raise exceptions.ValidationError(
+                'Must include either "username" or "email".'
+            )
         if not password:
             raise exceptions.ValidationError('Must include "password".')
 
@@ -115,12 +128,16 @@ class LoginSerializer(serializers.Serializer):
             elif username:
                 user = User.objects.get(username=username)
         except User.DoesNotExist:
-            raise exceptions.ValidationError('User with the provided email/username does not exist.')
+            raise exceptions.ValidationError(
+                "User with the provided email/username does not exist."
+            )
 
         credentials = {"username": user.username, "password": password}
-        authenticated_user = authenticate(request=self.context.get("request"), **credentials)
+        authenticated_user = authenticate(
+            request=self.context.get("request"), **credentials
+        )
         if not authenticated_user:
-            raise exceptions.ValidationError('Incorrect password.')
+            raise exceptions.ValidationError("Incorrect password.")
         return authenticated_user
 
     def _validate_username_email(self, username, email, password):
@@ -145,7 +162,9 @@ class LoginSerializer(serializers.Serializer):
         elif username and password:
             user = self.authenticate(username=username, password=password)
         else:
-            raise exceptions.ValidationError('Must include either "username" or "email" and "password".')
+            raise exceptions.ValidationError(
+                'Must include either "username" or "email" and "password".'
+            )
 
         return user
 
@@ -184,7 +203,9 @@ class LoginSerializer(serializers.Serializer):
         except exceptions.ValidationError as e:
             raise e
         except Exception as e:
-            raise exceptions.ValidationError('Unable to log in with provided credentials.')
+            raise exceptions.ValidationError(
+                "Unable to log in with provided credentials."
+            )
 
     @staticmethod
     def validate_auth_user_status(user):
@@ -198,7 +219,7 @@ class LoginSerializer(serializers.Serializer):
             ValidationError: If the user account is disabled.
         """
         if not user.is_active:
-            raise exceptions.ValidationError('User account is disabled.')
+            raise exceptions.ValidationError("User account is disabled.")
 
     def validate(self, attrs):
         """
@@ -213,16 +234,62 @@ class LoginSerializer(serializers.Serializer):
         Returns:
             dict: The validated data including the authenticated user instance.
         """
-        username = attrs.get('username')
-        email = attrs.get('email')
-        password = attrs.get('password')
+        username = attrs.get("username")
+        email = attrs.get("email")
+        password = attrs.get("password")
         user = self.get_auth_user(username, email, password)
 
         if not user:
-            raise exceptions.ValidationError('Unable to log in with provided credentials.')
+            raise exceptions.ValidationError(
+                "Unable to log in with provided credentials."
+            )
 
         # TODO: Check that the user has verified their email. (to be implemented later)
 
         self.validate_auth_user_status(user)
-        attrs['user'] = user
+        attrs["user"] = user
         return attrs
+
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField(required=True)
+
+
+class PasswordOTPSerializer(serializers.ModelSerializer):
+    """
+    Serializer for PasswordOTP model
+    """
+
+    class Meta:
+        model = PasswordOTP
+        fields = ["email", "code"]
+        read_only_fields = ["code"]
+
+    def create(self, validated_data):
+        # Generate a random OTP code
+        import secrets
+
+        code = secrets.randbelow(10**6)  # 6-digit OTP
+        validated_data["code"] = str(code).zfill(6)  # pad with zeros
+
+        # Set expires_at to a certain time interval (e.g. 10 minutes)
+        from datetime import datetime, timedelta
+
+        validated_data["expires_at"] = datetime.now() + timedelta(minutes=30)
+        otp = super().create(validated_data)
+        email = otp.email
+        code = otp.code
+
+        # Generate and send the email
+        subject = "OTP"
+        message = render_to_string("password_reset_otp_email.html", {"code": code})
+        from_email = settings.DEFAULT_FROM_EMAIL
+        recipient_list = [email]
+
+        send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+
+        return otp
+
+
+class VerifyOTPSerializer(serializers.Serializer):
+    otp = serializers.CharField()
