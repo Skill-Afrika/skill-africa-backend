@@ -1,8 +1,10 @@
+from datetime import datetime
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.urls import reverse
-from profile_management.models import User
+from profile_management.models import User, PasswordOTP
 from rest_framework_simplejwt.tokens import RefreshToken
+from unittest.mock import patch
 
 
 class LoginViewTests(APITestCase):
@@ -119,3 +121,43 @@ class LogoutViewTests(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data["detail"], "Token is blacklisted")
+
+
+class PasswordOTPViewTests(APITestCase):
+    def setUp(self):
+        self.url = reverse("password_otp")
+        self.user = User.objects.create_user(
+            email="test_user@example.com", password="testpass123", username="test_user"
+        )
+
+    def test_get_otp_success(self):
+        response = self.client.post(self.url, {"email": self.user.email})
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["message"], "OTP sent successfully")
+        self.assertEqual(str(response.data["data"]["uuid"]), str(self.user.uuid))
+
+        # Verify OTP object is created
+        otp_obj = PasswordOTP.objects.filter(email=self.user.email)
+        self.assertTrue(otp_obj.exists())
+
+    def test_get_otp_email_required(self):
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["error"], "Email is required")
+
+    def test_get_otp_user_not_found(self):
+        response = self.client.post(self.url, {"email": "nonexistent@example.com"})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data["error"], "User with this email does not exist")
+
+    def test_existing_otp_deleted_before_new_one_created(self):
+        PasswordOTP.objects.create(
+            email=self.user.email, code="123456", expires_at=datetime.now()
+        )
+        response = self.client.post(self.url, {"email": self.user.email})
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Verify old OTP object is deleted and new one is created
+        self.assertEqual(PasswordOTP.objects.filter(email=self.user.email).count(), 1)

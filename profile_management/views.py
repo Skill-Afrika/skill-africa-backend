@@ -395,17 +395,18 @@ class ConfirmEmail(APIView):
         summary="Confirm Email",
         description="This endpoint confirms the user email by accepting a confirmation key as a path parameter.",
     )
-    def get(self, request, key):
-        if not key:
+    def get(self, request, verification_code):
+        if not verification_code:
             return Response(
-                {"error": "Key is required"}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "Verification Code is required"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Construct the URL for the second view
         url = request.build_absolute_uri(reverse("verify_email"))
 
         # Prepare the data to be sent in the POST request
-        post_data = {"key": key}
+        post_data = {"key": verification_code}
 
         # Make the POST request to the second view
         response = requests.post(url, data=post_data)
