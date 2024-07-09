@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+import uuid
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.urls import reverse
@@ -161,3 +162,57 @@ class PasswordOTPViewTests(APITestCase):
 
         # Verify old OTP object is deleted and new one is created
         self.assertEqual(PasswordOTP.objects.filter(email=self.user.email).count(), 1)
+
+
+class VerifyOTPViewTestCase(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            "john_doe", "johndoe@example.com", "P@ssw0rd_123"
+        )
+        self.uuid = self.user.uuid
+        self.otp = "123456"
+        PasswordOTP.objects.create(
+            email=self.user.email,
+            code=self.otp,
+            expires_at=datetime.now() + timedelta(minutes=30),
+        )
+
+    def test_verify_otp_success(self):
+        url = reverse("password_otp_confirm", args=[self.uuid])
+        data = {"otp": self.otp}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("access", response.data)
+        self.assertIn("refresh", response.data)
+        self.assertIn("user", response.data)
+
+    def test_verify_otp_invalid_otp(self):
+        url = reverse("password_otp_confirm", args=[self.uuid])
+        data = {"otp": "invalid_otp"}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data, {"error": "Invalid OTP"})
+
+    def test_verify_otp_expired_otp(self):
+        otp_verification = PasswordOTP.objects.get(email=self.user.email, code=self.otp)
+        otp_verification.expires_at = datetime.now() - timedelta(minutes=1)
+        otp_verification.save()
+        url = reverse("password_otp_confirm", args=[self.uuid])
+        data = {"otp": self.otp}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data, {"error": "OTP has expired"})
+
+    def test_verify_otp_missing_otp(self):
+        url = reverse("password_otp_confirm", args=[self.uuid])
+        data = {}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data, {"error": "OTP and UUID are required"})
+
+    def test_verify_otp_missing_uuid(self):
+        url = reverse("password_otp_confirm", args=[str(uuid.uuid4())])
+        data = {"otp": self.otp}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data, {"error": "User not found"})
