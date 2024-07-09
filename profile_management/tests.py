@@ -17,29 +17,12 @@ class LoginViewTests(APITestCase):
         self.user = User.objects.create_user(
             username=self.username, email=self.email, password=self.password
         )
-        self.valid_data = {"username": self.username, "password": self.password}
-        self.valid_data_username = {
-            "username": self.username,
-            "password": self.password,
-        }
-        self.valid_data_email = {"email": self.email, "password": self.password}
-        self.invalid_data = {"username": self.username, "password": "wrong_password"}
-        self.missing_data = {"username": self.username}
+        self.valid_data = {"email": self.email, "password": self.password}
+        self.invalid_data = {"email": self.email, "password": "wrong_password"}
+        self.missing_data = {"email": self.email}
 
-    def test_successful_login_username(self):
-        response = self.client.post(self.url, self.valid_data_username, format="json")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("user", response.data)
-        self.assertIn("username", response.data["user"])
-        self.assertIn("email", response.data["user"])
-        self.assertIn("role", response.data["user"])
-        self.assertIn("access", response.data)
-        self.assertIn("refresh", response.data)
-        self.assertIn("access_expiration", response.data)
-        self.assertIn("refresh_expiration", response.data)
-
-    def test_successful_login_email(self):
-        response = self.client.post(self.url, self.valid_data_email, format="json")
+    def test_successful_login(self):
+        response = self.client.post(self.url, self.valid_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("user", response.data)
         self.assertIn("username", response.data["user"])

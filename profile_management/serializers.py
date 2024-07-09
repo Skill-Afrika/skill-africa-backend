@@ -93,21 +93,19 @@ class LoginSerializer(serializers.Serializer):
     username or email along with a password.
     """
 
-    username = serializers.CharField(required=False)
-    email = serializers.CharField(required=False)
+    email = serializers.CharField(required=True)
     password = serializers.CharField()
 
-    def authenticate(self, email=None, username=None, password=None):
+    def authenticate(self, email=None, password=None):
         """
-        Authenticates a user using email or username and password.
+        Authenticates a user using email and password.
 
         Args:
-            email (str, optional): The email of the user.
-            username (str, optional): The username of the user.
+            email (str, required): The email of the user.
             password (str): The password of the user.
 
         Raises:
-            ValidationError: If neither email nor username is provided,
+            ValidationError: If email is not provided,
                              or if the password is not provided,
                              or if the user does not exist,
                              or if the password is incorrect.
@@ -115,21 +113,16 @@ class LoginSerializer(serializers.Serializer):
         Returns:
             User: The authenticated user instance.
         """
-        if not email and not username:
-            raise exceptions.ValidationError(
-                'Must include either "username" or "email".'
-            )
+        if not email:
+            raise exceptions.ValidationError('Must include either "email".')
         if not password:
             raise exceptions.ValidationError('Must include "password".')
 
         try:
-            if email:
-                user = User.objects.get(email=email)
-            elif username:
-                user = User.objects.get(username=username)
+            user = User.objects.get(email=email)
         except User.DoesNotExist:
             raise exceptions.ValidationError(
-                "User with the provided email/username does not exist."
+                "User with the provided email does not exist."
             )
 
         credentials = {"username": user.username, "password": password}
@@ -140,17 +133,16 @@ class LoginSerializer(serializers.Serializer):
             raise exceptions.ValidationError("Incorrect password.")
         return authenticated_user
 
-    def _validate_username_email(self, username, email, password):
+    def _validate_email(self, email, password):
         """
-        Validates the user credentials using either username or email.
+        Validates the user credentials using either email.
 
         Args:
-            username (str, optional): The username of the user.
-            email (str, optional): The email of the user.
+            email (str, required): The email of the user.
             password (str): The password of the user.
 
         Raises:
-            ValidationError: If neither username nor email is provided,
+            ValidationError: If email is not provided,
                              or if the password is not provided,
                              or if the authentication fails.
 
@@ -159,47 +151,29 @@ class LoginSerializer(serializers.Serializer):
         """
         if email and password:
             user = self.authenticate(email=email, password=password)
-        elif username and password:
-            user = self.authenticate(username=username, password=password)
         else:
-            raise exceptions.ValidationError(
-                'Must include either "username" or "email" and "password".'
-            )
+            raise exceptions.ValidationError('Must include "email" and "password".')
 
         return user
 
-    def get_auth_user_using_allauth(self, username, email, password):
+    def get_auth_user(self, username, email, password):
         """
-        Authenticates the user using either username or email and password
-        through the allauth authentication scheme.
+        Validates the user credentials using either email.
 
         Args:
-            username (str, optional): The username of the user.
-            email (str, optional): The email of the user.
+            email (str, required): The email of the user.
             password (str): The password of the user.
+
+        Raises:
+            ValidationError: If email is not provided,
+                             or if the password is not provided,
+                             or if the authentication fails.
 
         Returns:
             User: The authenticated user instance.
         """
-        return self._validate_username_email(username, email, password)
-
-    def get_auth_user(self, username, email, password):
-        """
-        Retrieves the authenticated user using the provided credentials.
-
-        Args:
-            username (str, optional): The username of the user.
-            email (str, optional): The email of the user.
-            password (str): The password of the user.
-
-        Raises:
-            ValidationError: If the authentication fails.
-
-        Returns:
-            User: The authenticated user instance, or None if authentication fails.
-        """
         try:
-            return self.get_auth_user_using_allauth(username, email, password)
+            return self._validate_email(email, password)
         except exceptions.ValidationError as e:
             raise e
         except Exception as e:
