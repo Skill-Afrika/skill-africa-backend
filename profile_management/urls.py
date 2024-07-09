@@ -5,11 +5,12 @@ from .views import (
     ConfirmEmail,
     PasswordOTPView,
     VerifyOTPView,
+    CustomVerifyEmailView,
+    CustomResendEmailVerificationView,
 )
 from dj_rest_auth.views import (
     PasswordChangeView,
 )
-from dj_rest_auth.registration.views import VerifyEmailView, ResendEmailVerificationView
 
 urlpatterns = [
     path("login/", LoginView.as_view(), name="login_view"),
@@ -30,6 +31,10 @@ urlpatterns = [
         ConfirmEmail.as_view(),
         name="account_confirm_email",
     ),
-    path("resend/email/", ResendEmailVerificationView.as_view(), name="resend_email"),
-    path("verify/email/", VerifyEmailView.as_view(), name="verify_email"),
+    path(
+        "resend/email/",
+        CustomResendEmailVerificationView.as_view(),
+        name="resend_email",
+    ),
+    path("verify/email/", CustomVerifyEmailView.as_view(), name="verify_email"),
 ]

@@ -1,10 +1,14 @@
 from datetime import datetime, timedelta
+from django.shortcuts import redirect
+from django.urls import reverse
+import requests
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from dj_rest_auth.registration.views import RegisterView
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema
+from dj_rest_auth.registration.views import VerifyEmailView, ResendEmailVerificationView
 
 from profile_management.models import PasswordOTP, User
 from .serializers import (
@@ -385,4 +389,40 @@ class VerifyOTPView(APIView):
 
 
 class ConfirmEmail(APIView):
-    pass
+    serializer_class = None
+
+    @extend_schema(
+        summary="Confirm Email",
+        description="This endpoint confirms the user email by accepting a confirmation key as a path parameter.",
+    )
+    def get(self, request, key):
+        if not key:
+            return Response(
+                {"error": "Key is required"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Construct the URL for the second view
+        url = request.build_absolute_uri(reverse("verify_email"))
+
+        # Prepare the data to be sent in the POST request
+        post_data = {"key": key}
+
+        # Make the POST request to the second view
+        response = requests.post(url, data=post_data)
+
+        # Return the response from the second view
+        return Response(response.json(), status=response.status_code)
+
+
+class CustomVerifyEmailView(VerifyEmailView):
+    """
+    To be used internally
+    """
+
+
+class CustomResendEmailVerificationView(ResendEmailVerificationView):
+    """
+    Sends a verification link to emails that have not yet been verified.
+    Verification is then completed through the confirm email endpoint.
+    P.S It does not send the mail to verified emails.
+    """
