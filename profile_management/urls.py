@@ -3,11 +3,11 @@ from .views import (
     LoginView,
     LogoutView,
     ConfirmEmail,
+    PasswordOTPView,
+    VerifyOTPView,
 )
 from dj_rest_auth.views import (
     PasswordChangeView,
-    PasswordResetView,
-    PasswordResetConfirmView,
 )
 from dj_rest_auth.registration.views import VerifyEmailView, ResendEmailVerificationView
 
@@ -16,14 +16,14 @@ urlpatterns = [
     path("logout/", LogoutView.as_view(), name="logout_view"),
     path("password/change/", PasswordChangeView.as_view(), name="password_change"),
     path(
-        "password/reset/",
-        PasswordResetView.as_view(),
-        name="password_reset",
+        "password/otp/",
+        PasswordOTPView.as_view(),
+        name="password_otp",
     ),
     path(
-        "password/reset/<str:key>",
-        PasswordResetConfirmView.as_view(),
-        name="password_reset_confirm",
+        "password/otp/<str:uuid>",
+        VerifyOTPView.as_view(),
+        name="password_otp_confirm",
     ),
     path(
         r"confirm/email/<str:key>",

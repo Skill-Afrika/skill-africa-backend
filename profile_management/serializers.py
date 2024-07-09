@@ -1,12 +1,12 @@
 from rest_framework import serializers, exceptions
-from .models import User
+from .models import User, PasswordOTP
 from django.contrib.auth import get_user_model, authenticate
 from allauth.account.adapter import get_adapter
 from allauth.socialaccount.models import EmailAddress
 from allauth.account.utils import setup_user_email
-from django.urls import exceptions as url_exceptions
-from dj_rest_auth.serializers import PasswordResetSerializer
-from django.contrib.auth.forms import PasswordResetForm
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
 
 User = get_user_model()
 
@@ -255,8 +255,41 @@ class LogoutSerializer(serializers.Serializer):
     refresh = serializers.CharField(required=True)
 
 
-class CustomPasswordResetSerializer(PasswordResetSerializer):
-    # @property
-    # def password_reset_form_class(self):
-    #     return PasswordResetForm
-    pass
+class PasswordOTPSerializer(serializers.ModelSerializer):
+    """
+    Serializer for PasswordOTP model
+    """
+
+    class Meta:
+        model = PasswordOTP
+        fields = ["email", "code"]
+        read_only_fields = ["code"]
+
+    def create(self, validated_data):
+        # Generate a random OTP code
+        import secrets
+
+        code = secrets.randbelow(10**6)  # 6-digit OTP
+        validated_data["code"] = str(code).zfill(6)  # pad with zeros
+
+        # Set expires_at to a certain time interval (e.g. 10 minutes)
+        from datetime import datetime, timedelta
+
+        validated_data["expires_at"] = datetime.now() + timedelta(minutes=30)
+        otp = super().create(validated_data)
+        email = otp.email
+        code = otp.code
+
+        # Generate and send the email
+        subject = "OTP"
+        message = render_to_string("password_reset_otp_email.html", {"code": code})
+        from_email = settings.DEFAULT_FROM_EMAIL
+        recipient_list = [email]
+
+        send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+
+        return otp
+
+
+class VerifyOTPSerializer(serializers.Serializer):
+    otp = serializers.CharField()

@@ -5,11 +5,15 @@ from rest_framework.views import APIView
 from dj_rest_auth.registration.views import RegisterView
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema
+
+from profile_management.models import PasswordOTP, User
 from .serializers import (
     RegisterSerializer,
     JWTSerializer,
     LoginSerializer,
+    PasswordOTPSerializer,
     LogoutSerializer,
+    VerifyOTPSerializer,
 )
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -78,7 +82,7 @@ class LoginView(APIView):
     @extend_schema(
         request=LoginSerializer,
         responses={
-            201: {
+            200: {
                 "type": "object",
                 "properties": {
                     "user": {
@@ -218,6 +222,166 @@ class LogoutView(APIView):
                 response.data = {"detail": "An error has occurred."}
                 response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
         return response
+
+
+class PasswordOTPView(APIView):
+    @extend_schema(
+        summary="Get OTP for changing password or to login",
+        description="Collects users email so that an OTP can be sent to it. To be used to implement changing of password when user forgets it or Login with OTP",
+        request=PasswordOTPSerializer,
+    )
+    def post(self, request):
+        # Check that the user has an account
+        email = request.data.get("email")
+        if not email:
+            return Response({"error": "Email is required"}, status=400)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User with this email does not exist"}, status=404
+            )
+
+        # Delete any existing OTP for the user
+        PasswordOTP.objects.filter(email=email).delete()
+        serializer = PasswordOTPSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "OTP sent successfully", "data": {"uuid": user.uuid}},
+                status=status.HTTP_201_CREATED,
+            )
+        return Response(serializer.errors, status=400)
+
+
+class VerifyOTPView(APIView):
+    user = None
+
+    def login(self, user):
+        self.user = user
+        refresh = RefreshToken.for_user(user)
+        self.access_token = str(refresh.access_token)
+        self.refresh_token = str(refresh)
+
+    def get_response(self):
+        serializer_class = JWTSerializer
+        access_token_expiration = datetime.now() + timedelta(
+            hours=int(config["ACCESS_TOKEN_LIFETIME_HOURS"])
+        )
+        refresh_token_expiration = datetime.now() + timedelta(
+            days=int(config["REFRESH_TOKEN_LIFETIME_DAYS"])
+        )
+
+        data = {
+            "user": self.user,
+            "access": self.access_token,
+            "refresh": self.refresh_token,
+            "access_expiration": access_token_expiration,
+            "refresh_expiration": refresh_token_expiration,
+        }
+
+        serializer = serializer_class(instance=data)
+        response = Response(serializer.data, status=status.HTTP_200_OK)
+        return response
+
+    @extend_schema(
+        summary="Verify OTP",
+        description="Using the OTP sent to the user's email the user can login, then depending on if the flow is for login with code or change password you can then redirect the user to a page where the change password endpoint can be used.",
+        request=VerifyOTPSerializer,
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "user": {
+                        "type": "object",
+                        "properties": {
+                            "username": {"type": "string"},
+                            "email": {"type": "string"},
+                            "role": {"type": "string"},
+                        },
+                    },
+                    "refresh": {"type": "string"},
+                    "access": {"type": "string"},
+                    "access_expiration": {"type": "string"},
+                    "refresh_expiration": {"type": "string"},
+                },
+                "examples": [
+                    {
+                        "summary": "Successful registration",
+                        "value": {
+                            "user": {
+                                "username": "john_doe",
+                                "email": "johndoe@example.com",
+                                "role": "freelancer",
+                            },
+                            "refresh": "refresh_token_here",
+                            "access": "access_token_here",
+                            "access_expiration": "2024-06-20T16:08:30.615400Z",
+                            "refresh_expiration": "2024-06-26T16:08:30.615400Z",
+                        },
+                    }
+                ],
+            },
+            400: {
+                "type": "object",
+                "properties": {
+                    "error": {"type": "string"},
+                },
+                "examples": [
+                    {
+                        "summary": "Invalid Input",
+                        "value": {"error": "OTP and UUID are required"},
+                    },
+                    {
+                        "summary": "User Not Found",
+                        "value": {"error": "User not found"},
+                    },
+                    {
+                        "summary": "Invalid OTP",
+                        "value": {"error": "Invalid OTP"},
+                    },
+                    {
+                        "summary": "OTP Expired",
+                        "value": {"error": "OTP has expired"},
+                    },
+                ],
+            },
+        },
+    )
+    def post(self, request, uuid):
+        otp = request.data.get("otp")
+        if not otp or not uuid:
+            return Response(
+                {"error": "OTP and UUID are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            user = User.objects.get(uuid=uuid)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User not found"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            otp_verification = PasswordOTP.objects.get(email=user.email, code=otp)
+        except PasswordOTP.DoesNotExist:
+            return Response(
+                {"error": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        now = datetime.now()
+        expires_at = otp_verification.expires_at.replace(tzinfo=None)
+        if now > expires_at:
+            return Response(
+                {"error": "OTP has expired"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Log user in and Delete otp after use
+        self.login(user)
+        otp_verification.delete()
+        return self.get_response()
 
 
 class ConfirmEmail(APIView):

@@ -79,10 +79,10 @@ REST_AUTH = {
     "JWT_AUTH_HTTPONLY": False,
     "REGISTER_SERIALIZER": "profile_management.serializers.RegisterSerializer",
     "LOGIN_SERIALIZER": "profile_management.serializers.LoginSerializer",
-    # "PASSWORD_RESET_CONFIRM_SERIALIZER": "profile_management.serializers.CustomPasswordResetSerializer",
 }
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "skill_africa@example.com"
 
 # SimpleJWT Settings
 SIMPLE_JWT = {
