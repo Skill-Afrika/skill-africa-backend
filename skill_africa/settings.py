@@ -1,26 +1,27 @@
 from datetime import timedelta
 from pathlib import Path
+import dj_database_url
+import os
+from dotenv import load_dotenv
+
+# Load .env values
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Get .env values
-from dotenv import dotenv_values
-
-config = dotenv_values(".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config["SECRET_KEY"]
+SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key")
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
-
+ALLOWED_HOSTS = ['backend-api-fq3o.onrender.com', 'localhost', '127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
@@ -86,14 +87,11 @@ DEFAULT_FROM_EMAIL = "skill_africa@example.com"
 
 # SimpleJWT Settings
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(
-        hours=int(config["ACCESS_TOKEN_LIFETIME_HOURS"])
-    ),
-    "REFRESH_TOKEN_LIFETIME": timedelta(
-        days=int(config["REFRESH_TOKEN_LIFETIME_DAYS"])
-    ),
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=int(os.getenv('ACCESS_TOKEN_LIFETIME_HOURS'))),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=int(os.getenv('REFRESH_TOKEN_LIFETIME_DAYS'))),
     "ROTATE_REFRESH_TOKENS": False,
 }
+
 
 
 MIDDLEWARE = [
@@ -107,10 +105,16 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# settings.py
+
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Add your frontend URL here
+    'http://localhost:3000',  # Example for local development
+    'https://backend-api-fq3o.onrender.com',  # Corrected Render URL without extra characters
 ]
 
 
@@ -138,17 +142,23 @@ WSGI_APPLICATION = "skill_africa.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    },
-    "test": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "test.db.sqlite3",
-    },
-}
-
+if DEBUG:
+    # Development configuration using SQLite
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        },
+        'test': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'test.db.sqlite3',
+        }
+    }
+else:
+    # Production configuration using dj_database_url and DATABASE_URL environment variable
+    DATABASES = {
+        'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -185,6 +195,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
