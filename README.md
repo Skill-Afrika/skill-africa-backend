@@ -35,6 +35,8 @@ pip install -r requirements.txt
      SECRET_KEY=your_secret_key_here
      REFRESH_TOKEN_LIFETIME_DAYS=7
      ACCESS_TOKEN_LIFETIME_HOURS=24
+     DATABASE_URL = your_db_url
+     ALLOWED_HOSTS = allowed_host
      ```
 
 5. Run Migrations to set up the initial database schema:
