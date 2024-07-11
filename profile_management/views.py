@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import os
 from django.shortcuts import redirect
 from django.urls import reverse
 import requests
@@ -64,12 +65,12 @@ class LoginView(APIView):
 
     def get_response(self):
         serializer_class = self.response_serializer
-        access_token_expiration = datetime.now() + timedelta(
-            hours=int(config["ACCESS_TOKEN_LIFETIME_HOURS"])
-        )
-        refresh_token_expiration = datetime.now() + timedelta(
-            days=int(config["REFRESH_TOKEN_LIFETIME_DAYS"])
-        )
+        access_token_lifetime_hours = int(os.getenv("ACCESS_TOKEN_LIFETIME_HOURS", 1))  # Default to 1 hour if not set
+        refresh_token_lifetime_days = int(os.getenv("REFRESH_TOKEN_LIFETIME_DAYS", 7))  # Default to 7 days if not set
+
+        access_token_expiration = datetime.now() + timedelta(hours=access_token_lifetime_hours)
+        refresh_token_expiration = datetime.now() + timedelta(days=refresh_token_lifetime_days)
+
 
         data = {
             "user": self.user,
@@ -269,13 +270,13 @@ class VerifyOTPView(APIView):
         self.refresh_token = str(refresh)
 
     def get_response(self):
-        serializer_class = JWTSerializer
-        access_token_expiration = datetime.now() + timedelta(
-            hours=int(config["ACCESS_TOKEN_LIFETIME_HOURS"])
-        )
-        refresh_token_expiration = datetime.now() + timedelta(
-            days=int(config["REFRESH_TOKEN_LIFETIME_DAYS"])
-        )
+        serializer_class = self.response_serializer
+        access_token_lifetime_hours = int(os.getenv("ACCESS_TOKEN_LIFETIME_HOURS", 1))  # Default to 1 hour if not set
+        refresh_token_lifetime_days = int(os.getenv("REFRESH_TOKEN_LIFETIME_DAYS", 7))  # Default to 7 days if not set
+
+        access_token_expiration = datetime.now() + timedelta(hours=access_token_lifetime_hours)
+        refresh_token_expiration = datetime.now() + timedelta(days=refresh_token_lifetime_days)
+
 
         data = {
             "user": self.user,
