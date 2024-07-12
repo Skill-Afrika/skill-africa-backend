@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'sponsor_management',
     'admin_management',
     'corsheaders',
-    'NewsManagement',
+    'news_management',
 ]
 
 SITE_ID = 1
