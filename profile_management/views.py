@@ -65,12 +65,19 @@ class LoginView(APIView):
 
     def get_response(self):
         serializer_class = self.response_serializer
-        access_token_lifetime_hours = int(os.getenv("ACCESS_TOKEN_LIFETIME_HOURS", 1))  # Default to 1 hour if not set
-        refresh_token_lifetime_days = int(os.getenv("REFRESH_TOKEN_LIFETIME_DAYS", 7))  # Default to 7 days if not set
+        access_token_lifetime_hours = int(
+            os.getenv("ACCESS_TOKEN_LIFETIME_HOURS", 1)
+        )  # Default to 1 hour if not set
+        refresh_token_lifetime_days = int(
+            os.getenv("REFRESH_TOKEN_LIFETIME_DAYS", 7)
+        )  # Default to 7 days if not set
 
-        access_token_expiration = datetime.now() + timedelta(hours=access_token_lifetime_hours)
-        refresh_token_expiration = datetime.now() + timedelta(days=refresh_token_lifetime_days)
-
+        access_token_expiration = datetime.now() + timedelta(
+            hours=access_token_lifetime_hours
+        )
+        refresh_token_expiration = datetime.now() + timedelta(
+            days=refresh_token_lifetime_days
+        )
 
         data = {
             "user": self.user,
@@ -230,6 +237,9 @@ class LogoutView(APIView):
 
 
 class PasswordOTPView(APIView):
+    def serializer_class(self):
+        return PasswordOTPSerializer
+
     @extend_schema(
         summary="Get OTP for changing password or to login",
         description="Collects users email so that an OTP can be sent to it. To be used to implement changing of password when user forgets it or Login with OTP",
@@ -271,12 +281,19 @@ class VerifyOTPView(APIView):
 
     def get_response(self):
         serializer_class = self.response_serializer
-        access_token_lifetime_hours = int(os.getenv("ACCESS_TOKEN_LIFETIME_HOURS", 1))  # Default to 1 hour if not set
-        refresh_token_lifetime_days = int(os.getenv("REFRESH_TOKEN_LIFETIME_DAYS", 7))  # Default to 7 days if not set
+        access_token_lifetime_hours = int(
+            os.getenv("ACCESS_TOKEN_LIFETIME_HOURS", 1)
+        )  # Default to 1 hour if not set
+        refresh_token_lifetime_days = int(
+            os.getenv("REFRESH_TOKEN_LIFETIME_DAYS", 7)
+        )  # Default to 7 days if not set
 
-        access_token_expiration = datetime.now() + timedelta(hours=access_token_lifetime_hours)
-        refresh_token_expiration = datetime.now() + timedelta(days=refresh_token_lifetime_days)
-
+        access_token_expiration = datetime.now() + timedelta(
+            hours=access_token_lifetime_hours
+        )
+        refresh_token_expiration = datetime.now() + timedelta(
+            days=refresh_token_lifetime_days
+        )
 
         data = {
             "user": self.user,

@@ -20,7 +20,17 @@ class User(AbstractUser):
 
 
 class ProfileBase(models.Model):
+    AUTH_CHOICES = [
+        ("password", "Password"),
+        ("google", "Google"),
+        ("microsoft", "Microsoft"),
+        ("github", "Github"),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    auth_method = models.CharField(
+        max_length=10, choices=AUTH_CHOICES, default="password"
+    )
 
     class Meta:
         abstract = True
