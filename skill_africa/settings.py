@@ -20,7 +20,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG")
-ALLOWED_HOSTS = ['backend-api-fq3o.onrender.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ["backend-api-fq3o.onrender.com", "localhost", "127.0.0.1"]
 # Application definition
 
 INSTALLED_APPS = [
@@ -43,11 +43,13 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "drf_spectacular_sidecar",
     "api",
+    "sso_authentication",
     "profile_management",
     "freelancer_management",
     "sponsor_management",
     "admin_management",
     "corsheaders",
+    "django_google_sso",
 ]
 
 SITE_ID = 1
@@ -86,12 +88,19 @@ DEFAULT_FROM_EMAIL = "skill_africa@example.com"
 
 # SimpleJWT Settings
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=int(os.getenv('ACCESS_TOKEN_LIFETIME_HOURS'))),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=int(os.getenv('REFRESH_TOKEN_LIFETIME_DAYS'))),
+    "ACCESS_TOKEN_LIFETIME": timedelta(
+        hours=int(os.getenv("ACCESS_TOKEN_LIFETIME_HOURS"))
+    ),
+    "REFRESH_TOKEN_LIFETIME": timedelta(
+        days=int(os.getenv("REFRESH_TOKEN_LIFETIME_DAYS"))
+    ),
     "ROTATE_REFRESH_TOKENS": False,
 }
 
-
+GOOGLE_SSO_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_SSO_PROJECT_ID = os.getenv("GOOGLE_PROJECT_ID")
+GOOGLE_SSO_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+GOOGLE_SSO_ALLOWABLE_DOMAINS = ["example.com"]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -107,13 +116,13 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # settings.py
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',  # Example for local development
-    'https://backend-api-fq3o.onrender.com',  # Corrected Render URL without extra characters
+    "http://localhost:3000",  # Example for local development
+    "https://backend-api-fq3o.onrender.com",  # Corrected Render URL without extra characters
 ]
 
 
@@ -142,11 +151,13 @@ WSGI_APPLICATION = "skill_africa.wsgi.application"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(default=os.getenv('DATABASE_URL', 'sqlite:///db.sqlite3')),
-    'test': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'test.db.sqlite3',
-    }
+    "default": dj_database_url.config(
+        default=os.getenv("DATABASE_URL", "sqlite:///db.sqlite3")
+    ),
+    "test": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "test.db.sqlite3",
+    },
 }
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -183,7 +194,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "static/"
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
