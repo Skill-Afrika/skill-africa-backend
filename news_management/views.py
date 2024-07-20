@@ -4,6 +4,7 @@ from .models import NewsFeed
 from .serializers import NewsFeedSerializer
 from .permission import  IsAdmin   
 from drf_spectacular.utils import extend_schema
+#from rest_framework.permissions import IsAdmin
 
 
 
@@ -63,8 +64,8 @@ class NewsFeedDetails(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = NewsFeedSerializer
     permission_classes=[IsAdmin]
 
-    def perform_update(self, serializer):
-        serializer.save(author=self.request.user)
+    #def perform_update(self, serializer):
+      #  serializer.save(author=self.request.user)
     
 
     # schema for Put method(update)
