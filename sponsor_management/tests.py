@@ -32,14 +32,14 @@ class SponsorRegistrationViewTests(APITestCase):
         incomplete_data.pop("email")
         response = self.client.post(self.url, incomplete_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("email", response.data)
+        self.assertIn("email", response.data["error"])
 
     def test_registration_with_invalid_data(self):
         response = self.client.post(self.url, self.invalid_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("username", response.data)
-        self.assertIn("email", response.data)
-        self.assertIn("password", response.data)
+        self.assertIn("username", response.data["error"])
+        self.assertIn("email", response.data["error"])
+        self.assertIn("password", response.data["error"])
 
     def test_registration_with_existing_username(self):
         User.objects.create_user(
@@ -49,7 +49,7 @@ class SponsorRegistrationViewTests(APITestCase):
         )
         response = self.client.post(self.url, self.valid_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("username", response.data)
+        self.assertIn("username", response.data["error"])
 
     def test_registration_with_existing_email(self):
         User.objects.create_user(
@@ -59,4 +59,4 @@ class SponsorRegistrationViewTests(APITestCase):
         )
         response = self.client.post(self.url, self.valid_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("email", response.data)
+        self.assertIn("email", response.data["error"])

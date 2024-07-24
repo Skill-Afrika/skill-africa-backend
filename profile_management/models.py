@@ -20,10 +20,22 @@ class User(AbstractUser):
 
 
 class ProfileBase(models.Model):
+    PROVIDER_CHOICES = [
+        ("password", "Password"),
+        ("google", "Google"),
+        ("microsoft", "Microsoft"),
+        ("github", "Github"),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    provider_id = models.CharField(max_length=255, null=True, blank=True, default=None)
+    provider = models.CharField(
+        max_length=10, choices=PROVIDER_CHOICES, default="password"
+    )
 
     class Meta:
         abstract = True
+        unique_together = ("provider", "provider_id")
 
 
 class PasswordOTP(models.Model):
