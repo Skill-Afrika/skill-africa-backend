@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from django.http import HttpResponseRedirect
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.exceptions import ObjectDoesNotExist
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 
 from profile_management.models import User
 from freelancer_management.models import FreelancerProfile
@@ -43,6 +44,28 @@ PROFILE_SERIALIZERS = {
 
 
 class GoogleStartSignInView(APIView):
+
+    @extend_schema(
+        operation_id="google_start_sign_in",
+        parameters=[
+            OpenApiParameter(
+                name="role",
+                description="The role of the user. Accepted values are freelancer, sponsor, and admin.",
+                required=True,
+                type=str,
+                enum=["freelancer", "sponsor", "admin"],
+            )
+        ],
+        responses={
+            302: OpenApiResponse(
+                description="Redirects the user to Google's OAuth 2.0 server for authorization."
+            ),
+            404: OpenApiResponse(
+                description="Path not found",
+                response={"error": {"message": "Path not found"}},
+            ),
+        },
+    )
     def get(self, request, role):
         if role not in ["freelancer", "sponsor", "admin"]:
             return Response(
@@ -74,6 +97,59 @@ class GoogleStartSignInView(APIView):
 
 
 class GoogleEndSignInView(APIView):
+
+    @extend_schema(
+        operation_id="google_end_sign_in",
+        parameters=[
+            OpenApiParameter(
+                name="code",
+                description="Authorization code returned by Google's OAuth 2.0 server.",
+                required=True,
+                type=str,
+                location=OpenApiParameter.QUERY,
+            ),
+            OpenApiParameter(
+                name="state",
+                description="State parameter returned by Google's OAuth 2.0 server.",
+                required=True,
+                type=str,
+                location=OpenApiParameter.QUERY,
+            ),
+        ],
+        responses={
+            201: OpenApiResponse(
+                description="User successfully authenticated and tokens generated.",
+                response={
+                    "user": {
+                        "email": "user@example.com",
+                        "username": "user1234",
+                        "role": "freelancer",
+                        "uuid": "user-uuid",
+                    },
+                    "refresh": "refresh-token",
+                    "access": "access-token",
+                },
+            ),
+            502: OpenApiResponse(
+                description="Authorization Code not received from SSO or Access token not received from SSO.",
+                response={
+                    "error": {"message": "Authorization Code not received from SSO."}
+                },
+            ),
+            428: OpenApiResponse(
+                description="State Mismatch or Time expired.",
+                response={"error": {"message": "State Mismatch. Time expired?"}},
+            ),
+            405: OpenApiResponse(
+                description="Wrong provider used for sign-up.",
+                response={"message": "Wrong provider. User signed up with <provider>"},
+            ),
+            500: OpenApiResponse(
+                description="Something went wrong or server error.",
+                response={"error": {"message": "Something went wrong"}},
+            ),
+        },
+    )
     def get(self, request):
         code = request.GET.get("code")
         state = request.GET.get("state")
@@ -168,7 +244,10 @@ class GoogleEndSignInView(APIView):
                 )
             except Exception as error:
                 print(error)
-                return Response({"message": "argggg not again?"})
+                return Response(
+                    {"error": {"message": "something went wrong"}},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
 
         # Generate tokens
         refresh = RefreshToken.for_user(user)
