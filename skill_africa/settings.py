@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     "sponsor_management",
     "admin_management",
     "corsheaders",
-    "django_google_sso",
+    # "django_google_sso",
 ]
 
 SITE_ID = 1
@@ -97,12 +97,14 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": False,
 }
 
-GOOGLE_SSO_ENABLED = True
-GOOGLE_SSO_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-GOOGLE_SSO_PROJECT_ID = os.getenv("GOOGLE_PROJECT_ID")
-GOOGLE_SSO_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-GOOGLE_SSO_ALLOWABLE_DOMAINS = ["gmail.com"]
-GOOGLE_SSO_CALLBACK_DOMAIN = "127.0.0.1:8000"
+# GOOGLE_SSO_ENABLED = True
+# GOOGLE_SSO_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+# GOOGLE_SSO_PROJECT_ID = os.getenv("GOOGLE_PROJECT_ID")
+# GOOGLE_SSO_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+# GOOGLE_SSO_ALLOWABLE_DOMAINS = ["gmail.com"]
+# GOOGLE_SSO_PRE_CREATE_CALLBACK = "sso_authentication.views.GooglePreCreate"
+# GOOGLE_SSO_CALLBACK_DOMAIN = "127.0.0.1:8000"
+# GOOGLE_SSO_NEXT_URL = "oauth_end_login"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -161,6 +163,20 @@ DATABASES = {
         "NAME": BASE_DIR / "test.db.sqlite3",
     },
 }
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": os.getenv("REDIS_LOCATION"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
+
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 

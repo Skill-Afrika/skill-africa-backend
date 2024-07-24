@@ -21,7 +21,6 @@ from .serializers import (
     VerifyOTPSerializer,
 )
 from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.tokens import RefreshToken
 
 # Get .env values
 from dotenv import dotenv_values
