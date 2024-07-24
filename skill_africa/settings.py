@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "freelancer_management",
     "sponsor_management",
     "admin_management",
+    "news_management",
     "corsheaders",
 ]
 
