@@ -56,7 +56,11 @@ class AdminRegistrationView(APIView):
             serializer.is_valid(raise_exception=True)
             serializer.create(validated_data={"user": user})
         except ValidationError as e:
-            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
+            error_details = {"error": {}}
+            for key in e.detail.keys():
+                error_details["error"][key] = e.detail[key][0]
+
+            return Response(data=error_details, status=status.HTTP_400_BAD_REQUEST)
 
         if data:
             response = Response(data, status=status.HTTP_201_CREATED)
