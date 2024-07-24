@@ -2,20 +2,22 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+
 class User(AbstractUser):
     ROLE_CHOICES = [
-        ('freelancer', 'Freelancer'),
-        ('sponsor', 'Sponsor'),
-        ('admin', 'Admin'),
+        ("freelancer", "Freelancer"),
+        ("sponsor", "Sponsor"),
+        ("admin", "Admin"),
     ]
 
     username = models.CharField(max_length=255, unique=True)
     email = models.EmailField(unique=True)
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='freelancer')
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="freelancer")
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
 
     def __str__(self):
         return self.username
+
 
 class ProfileBase(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -24,27 +26,18 @@ class ProfileBase(models.Model):
         abstract = True
 
 
+class PasswordOTP(models.Model):
+    """
+    Model to store OTP for password reset
+    """
 
+    email = models.EmailField(unique=True)
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def __str__(self):
+        return f"OTP for {self.email}"
 
 
 # # Get or create groups
@@ -58,6 +51,6 @@ class ProfileBase(models.Model):
 
 # for permission in SPONSOR_PERMISSIONS:
 #     sponsor_group.permissions.add(permission)
-    
+
 # for permission in ADMIN_PERMISSIONS:
 #     admin_group.permissions.add(permission)

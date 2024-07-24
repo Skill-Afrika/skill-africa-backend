@@ -2,5 +2,5 @@ from django.urls import path
 from .views import AdminRegistrationView
 
 urlpatterns = [
-    path('register/', AdminRegistrationView.as_view(), name='freelance_registeration'),
+    path("register/", AdminRegistrationView.as_view(), name="admin_registeration"),
 ]
