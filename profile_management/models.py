@@ -28,7 +28,7 @@ class ProfileBase(models.Model):
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    provider_id = models.CharField(max_length=255, null=True)
+    provider_id = models.CharField(max_length=255, null=True, blank=True, default=None)
     provider = models.CharField(
         max_length=10, choices=PROVIDER_CHOICES, default="password"
     )

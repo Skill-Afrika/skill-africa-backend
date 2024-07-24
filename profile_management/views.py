@@ -279,7 +279,7 @@ class VerifyOTPView(APIView):
         self.refresh_token = str(refresh)
 
     def get_response(self):
-        serializer_class = self.response_serializer
+        serializer_class = JWTSerializer
         access_token_lifetime_hours = int(
             os.getenv("ACCESS_TOKEN_LIFETIME_HOURS", 1)
         )  # Default to 1 hour if not set
