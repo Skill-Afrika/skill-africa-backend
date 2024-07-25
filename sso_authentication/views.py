@@ -80,7 +80,7 @@ class GoogleStartSignInView(APIView):
             scopes=GOOGLE_SCOPES,
             state=request_state,
         )
-        flow.redirect_uri = "http://127.0.0.1:8000" + reverse("google_signin_callback")
+        flow.redirect_uri = os.getenv("SITE_URL") + reverse("google_signin_callback")
 
         # Generate URL for request to Google's OAuth 2.0 server.
         authorization_url, state = flow.authorization_url(
@@ -189,7 +189,7 @@ class GoogleEndSignInView(APIView):
             os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = (
                 "1"  # This is to fix an error with the scopes being granted.
             )
-            flow.redirect_uri = "http://127.0.0.1:8000" + reverse(
+            flow.redirect_uri = os.getenv("SITE_URL") + reverse(
                 "google_signin_callback"
             )
             flow.fetch_token(code=code)
