@@ -17,6 +17,12 @@ class FreelanceSerializer(serializers.ModelSerializer):
         }
 
 
+class FreelancerLinkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FreelancerLink
+        fields = ["id", "name", "icon", "url"]
+
+
 # In order to not change the above serializer drastically and break existing code
 # Serializer for returning profile list and details
 class FreelanceProfileSerializer(serializers.ModelSerializer):
@@ -25,11 +31,31 @@ class FreelanceProfileSerializer(serializers.ModelSerializer):
     """
 
     user = UserDetailsSerializer(read_only=True)
+    niche = serializers.PrimaryKeyRelatedField(queryset=Niche.objects.all())
 
     class Meta:
         model = FreelancerProfile
-        exclude = ["provider", "provider_id", "id"]
         depth = 1
+        fields = [
+            "id",
+            "user",
+            "bio",
+            "niche",
+            "profile_pic",
+            "first_name",
+            "last_name",
+            "links",
+            "skills",
+            "created_at",
+        ]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["niche"] = NicheSerializer(instance.niche).data
+        representation["skills"] = ListFreelancerSkillSerializer(
+            instance.skills, many=True
+        ).data
+        return representation
 
 
 class NicheSerializer(serializers.ModelSerializer):
@@ -45,7 +71,7 @@ class SkillSerializer(serializers.ModelSerializer):
 
 
 class FreelancerSkillSerializer(serializers.ModelSerializer):
-    freelancer = FreelanceSerializer(read_only=True)
+    freelancer = FreelanceProfileSerializer(read_only=True)
     skill = SkillSerializer(read_only=True)
 
     class Meta:
@@ -53,9 +79,13 @@ class FreelancerSkillSerializer(serializers.ModelSerializer):
         fields = ["id", "freelancer", "skill"]
 
 
-class FreelancerLinkSerializer(serializers.ModelSerializer):
-    freelancer = FreelanceSerializer(read_only=True)
-
+# For use in the FreelanceProfileSerializer
+class ListFreelancerSkillSerializer(serializers.ModelSerializer):
     class Meta:
-        model = FreelancerLink
-        fields = ["id", "freelancer", "name", "icon", "url"]
+        model = FreelancerSkill
+        fields = ["skill"]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["skill"] = SkillSerializer(instance.skill).data["name"]
+        return representation

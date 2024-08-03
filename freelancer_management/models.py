@@ -27,23 +27,27 @@ class FreelancerProfile(ProfileBase):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.username
+        return self.user.username
 
 
 class FreelancerSkill(models.Model):
-    freelancer = models.ForeignKey(FreelancerProfile, on_delete=models.CASCADE)
+    freelancer = models.ForeignKey(
+        FreelancerProfile, on_delete=models.CASCADE, related_name="skills"
+    )
     skill = models.ForeignKey(Skill, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ("freelancer", "skill")
 
     def __str__(self):
-        return f"{self.freelancer.username} - {self.skill.name}"
+        return f"{self.freelancer.user.username} - {self.skill.name}"
 
 
 class FreelancerLink(models.Model):
     id = models.AutoField(primary_key=True)
-    freelancer = models.ForeignKey(FreelancerProfile, on_delete=models.CASCADE)
+    freelancer = models.ForeignKey(
+        FreelancerProfile, on_delete=models.CASCADE, related_name="links"
+    )
     name = models.CharField(max_length=255)
     icon = models.URLField(blank=True)
     url = models.URLField()

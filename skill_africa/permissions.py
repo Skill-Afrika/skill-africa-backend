@@ -12,3 +12,13 @@ class IsAuthenticatedWithJWT(BasePermission):
         if auth_details[0] is not None and auth_details[1] is not None:
             return True
         return False
+
+
+class IsProfileOwner(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return obj.user == request.user
+
+
+class IsAdmin(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return obj.user["role"] == "admin"
