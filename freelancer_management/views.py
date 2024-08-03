@@ -1,11 +1,20 @@
-from rest_framework import status
-from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from rest_framework import status, generics
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
-from drf_spectacular.utils import extend_schema
-from .serializers import FreelanceSerializer
 from profile_management.serializers import DocumentationRegisterSerializer
 from profile_management.views import registerUser
+from django.http import Http404
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from drf_spectacular.utils import extend_schema, extend_schema_view
+from rest_framework.response import Response
+from drf_spectacular.utils import OpenApiResponse
+
+from skill_africa.permissions import IsAuthenticatedWithJWT
+from profile_management.models import User
+from .serializers import FreelanceSerializer, FreelanceProfileSerializer
+from .models import FreelancerProfile
+from .filters import CustomOrderingFilter, CustomSearchFilter
 
 
 # Class View for registering Freelancers
@@ -69,3 +78,96 @@ class FreelanceRegistrationView(APIView):
         else:
             response = Response(status=status.HTTP_204_NO_CONTENT)
         return response
+
+
+class FreelancerProfileList(generics.ListAPIView):
+    queryset = FreelancerProfile.objects.all()
+    serializer_class = FreelanceProfileSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticatedWithJWT]
+    filter_backends = [CustomSearchFilter, CustomOrderingFilter]
+    ordering_fields = ["user__username"]
+    ordering = ["user__username"]
+    # Todo: Enable search by skill
+    search_fields = [
+        "user__username",
+        "user__email",
+        "niche__name",
+        "first_name",
+        "last_name",
+    ]
+
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+
+@extend_schema_view(
+    get=extend_schema(
+        summary="Retrieve a freelancer profile",
+        description="Retrieve the details of a freelancer profile by UUID.",
+        responses={200: FreelanceProfileSerializer},
+    ),
+    put=extend_schema(
+        summary="Update a freelancer profile",
+        description="Update the details of a freelancer profile by UUID. The requesting user must be the owner of the profile.",
+        request=FreelanceProfileSerializer,
+        responses={
+            200: FreelanceProfileSerializer,
+            403: OpenApiResponse(
+                description="You do not have permission to update this profile"
+            ),
+            400: OpenApiResponse(description="Invalid data"),
+        },
+    ),
+    delete=extend_schema(
+        summary="Delete a freelancer profile",
+        description="Delete a freelancer profile by UUID. The requesting user must be the owner of the profile.",
+        responses={
+            204: OpenApiResponse(description="Profile deleted successfully"),
+            403: OpenApiResponse(
+                description="You do not have permission to delete this profile"
+            ),
+        },
+    ),
+)
+class FreelancerProfileDetail(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticatedWithJWT]
+
+    def get_object(self, uuid):
+        try:
+            return get_object_or_404(
+                FreelancerProfile.objects.select_related("user"), user__uuid=uuid
+            )
+        except FreelancerProfile.DoesNotExist:
+            raise Http404
+
+    def get(self, request, uuid):
+        profile = self.get_object(uuid)
+        serializer = FreelanceProfileSerializer(profile)
+        return Response(serializer.data)
+
+    def put(self, request, uuid):
+        profile = self.get_object(uuid)
+        if profile.user != request.user:
+            return Response(
+                {"error": "You do not have permission to update this profile"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = FreelanceSerializer(profile, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, uuid):
+        profile = self.get_object(uuid)
+        if profile.user != request.user:
+            return Response(
+                {"error": "You do not have permission to delete this profile"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        profile.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

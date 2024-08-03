@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "sponsor_management",
     "admin_management",
     "corsheaders",
+    "django_filters",
 ]
 
 SITE_ID = 1
@@ -59,6 +60,9 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
     ),
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    "DEFAULT_PAGINATION_CLASS": "skill_africa.pagination.CustomPageNumberPagination",
+    "PAGE_SIZE": 50,
 }
 
 # DRF SPECTACULAR Settings
