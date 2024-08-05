@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "freelancer_management",
     "sponsor_management",
     "admin_management",
+    "event_management",
     "corsheaders",
     "django_filters",
 ]

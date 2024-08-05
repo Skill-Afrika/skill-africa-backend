@@ -5,7 +5,6 @@ from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
 from profile_management.serializers import DocumentationRegisterSerializer
 from profile_management.views import registerUser
-from django.http import Http404
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.response import Response
@@ -14,22 +13,16 @@ from drf_spectacular.types import OpenApiTypes
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from skill_africa.permissions import IsAdmin, IsAuthenticatedWithJWT, IsProfileOwner
-from profile_management.models import User
 from .serializers import (
     FreelanceSerializer,
     FreelanceProfileSerializer,
     FreelancerSkillSerializer,
+    FreelancerLinkSerializer,
+    NicheSerializer,
+    SkillSerializer,
 )
-from .models import FreelancerProfile, FreelancerSkill
+from .models import FreelancerLink, FreelancerProfile, FreelancerSkill, Niche, Skill
 from .filters import CustomOrderingFilter, CustomSearchFilter
-
-
-from rest_framework import generics, status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from .models import FreelancerProfile, FreelancerLink, Niche, Skill
-from .serializers import FreelancerLinkSerializer, NicheSerializer, SkillSerializer
-from django.shortcuts import get_object_or_404
 
 
 def get_freelancer_profile_with_uuid(uuid):

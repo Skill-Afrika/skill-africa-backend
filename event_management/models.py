@@ -1,11 +1,12 @@
 # models.py
+import uuid
 from django.db import models
 from admin_management.models import AdminProfile
 from profile_management.models import User
 
 
 class Event(models.Model):
-    uuid = models.UUIDField(primary_key=True, editable=False)
+    uuid = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
     name = models.CharField(max_length=255)
     location = models.CharField(max_length=255)
     datetime = models.DateTimeField()
@@ -21,7 +22,7 @@ class Event(models.Model):
 
 
 class EventAttendee(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="attendees")
     attendee = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
@@ -32,7 +33,7 @@ class EventAttendee(models.Model):
 
 
 class EventCoHost(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="cohosts")
     cohost = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
