@@ -33,7 +33,7 @@ pip install -r requirements.txt
    - Add the following variables to the `.env` file:
      ```plaintext
         SECRET_KEY=iZfkT41muRKOhBn7MSShrR7bx0x8thAorazQikq65wLgwSVrMwACNY6xsj9VuuEZ0AKpHQtt8iFYSxMRUE4SF1gfcVNkBLNRqLBo
-        DATABASE_URL=postgresql://skill_afrika:MO91YuwcAr2B8UvLmnA7Nsonx4REDm7j@dpg-crg97qd6l47c73dtl3og-a/skill_afrika_t56u
+        DATABASE_URL=postgresql://skill_afrika:MO91YuwcAr2B8UvLmnA7Nsonx4REDm7j@dpg-crg97qd6l47c73dtl3og-a.oregon-postgres.render.com/skill_afrika_t56u
         REFRESH_TOKEN_LIFETIME_DAYS=7
         ACCESS_TOKEN_LIFETIME_HOURS=24
         MAILCHIMP_API_KEY=md-nXOYM71MRBIYqy0IhxY5cQ
