@@ -122,7 +122,14 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Example for local development
     "https://backend-api-fq3o.onrender.com",  # Corrected Render URL without extra characters
+    "https://www.skillafrika.com",
 ]
+
+CORS_ALLOW_HEADERS = [
+    'Content-Type',
+    'Authorization',
+]
+
 
 
 ROOT_URLCONF = "skill_africa.urls"
