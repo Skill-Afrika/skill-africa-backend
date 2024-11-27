@@ -1,16 +1,23 @@
 from django.urls import path
-from .views import (
-    AddNicheView,
-    AddSkillsView,
-    DeleteNicheView,
-    DeleteSkillView,
-    FreelanceRegistrationView,
-    FreelancerProfileList,
-    FreelancerProfileDetail,
-    FreelancerLinkListCreateView,
+
+from freelancer_management.views.links import (
     FreelancerLinkDetailView,
+    FreelancerLinkListCreateView,
+)
+from freelancer_management.views.niche import (
+    AddNicheView,
+    DeleteNicheView,
     NicheCreateView,
     NicheListView,
+)
+from freelancer_management.views.profile import (
+    FreelanceRegistrationView,
+    FreelancerProfileDetail,
+    FreelancerProfileList,
+)
+from freelancer_management.views.skills import (
+    AddSkillsView,
+    DeleteSkillView,
     SkillListCreateView,
 )
 
