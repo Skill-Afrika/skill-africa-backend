@@ -3,10 +3,12 @@ from profile_management.serializers import UserDetailsSerializer
 from .models import (
     FreelancerNiche,
     Niche,
+    Project,
     Skill,
     FreelancerProfile,
     FreelancerSkill,
     FreelancerLink,
+    WorkExperience,
 )
 
 
@@ -132,3 +134,15 @@ class ListFreelancerNicheSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation["niche"] = NicheSerializer(instance.niche).data["name"]
         return representation
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ["id", "name", "url", "freelancer"]
+
+
+class WorkExperienceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WorkExperience
+        fields = "__all__"

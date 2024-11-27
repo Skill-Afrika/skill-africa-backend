@@ -15,6 +15,7 @@ from freelancer_management.views.profile import (
     FreelancerProfileDetail,
     FreelancerProfileList,
 )
+from freelancer_management.views.projects import ProjectCreateView
 from freelancer_management.views.skills import (
     AddSkillsView,
     DeleteSkillView,
@@ -31,6 +32,7 @@ urlpatterns = [
         FreelancerProfileDetail.as_view(),
         name="freelancer_profile_details",
     ),
+    # Links urls
     path(
         "profiles/<str:uuid>/links",
         FreelancerLinkListCreateView.as_view(),
@@ -41,6 +43,7 @@ urlpatterns = [
         FreelancerLinkDetailView.as_view(),
         name="profile-link-detail",
     ),
+    # Skills urls
     path(
         "profiles/<str:uuid>/skills",
         AddSkillsView.as_view(),
@@ -51,6 +54,8 @@ urlpatterns = [
         DeleteSkillView.as_view(),
         name="delete-freelancer-niches",
     ),
+    path("skills", SkillListCreateView.as_view(), name="skill-list-create"),
+    # Niche urls
     path(
         "profiles/<str:uuid>/niches",
         AddNicheView.as_view(),
@@ -63,5 +68,10 @@ urlpatterns = [
     ),
     path("niches", NicheListView.as_view(), name="niche-list"),
     path("niche", NicheCreateView.as_view(), name="niche-create"),
-    path("skills", SkillListCreateView.as_view(), name="skill-list-create"),
+    # Project urls
+    path(
+        "profiles/<str:uuid>/projects",
+        ProjectCreateView.as_view(),
+        name="project-create",
+    ),
 ]
