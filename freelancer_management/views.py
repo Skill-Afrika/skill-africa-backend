@@ -16,12 +16,20 @@ from skill_africa.permissions import IsAdmin, IsAuthenticatedWithJWT, IsProfileO
 from .serializers import (
     FreelanceSerializer,
     FreelanceProfileSerializer,
+    FreelancerNicheSerializer,
     FreelancerSkillSerializer,
     FreelancerLinkSerializer,
     NicheSerializer,
     SkillSerializer,
 )
-from .models import FreelancerLink, FreelancerProfile, FreelancerSkill, Niche, Skill
+from .models import (
+    FreelancerLink,
+    FreelancerNiche,
+    FreelancerProfile,
+    FreelancerSkill,
+    Niche,
+    Skill,
+)
 from .filters import CustomOrderingFilter, CustomSearchFilter
 
 
@@ -359,7 +367,7 @@ class AddSkillsView(APIView):
                         freelancer=freelancer, skill=skill
                     )
                     if created:
-                        created_skills.append(freelancer_skill)
+                        created_skills.append(freelancer_skill.skill.name)
                 except Skill.DoesNotExist:
                     errors.append(f"Skill with id {skill_id} does not exist.")
                 except Exception as e:
@@ -369,6 +377,241 @@ class AddSkillsView(APIView):
 
         if errors:
             return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"created_skills": created_skills}, status=status.HTTP_201_CREATED
+        )
 
-        serializer = FreelancerSkillSerializer(created_skills, many=True)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class DeleteSkillView(APIView):
+    @extend_schema(
+        summary="Delete a freelancer's skills",
+        description="Delete multiple skills from a freelancer's profile by passing a list of skill IDs.",
+        parameters=[
+            OpenApiParameter(
+                name="uuid",
+                description="UUID of the freelancer profile",
+                required=True,
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+            ),
+            OpenApiParameter(
+                name="skills",
+                description="ID of skills to delete",
+                required=True,
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+            ),
+        ],
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "skills": {"type": "array", "items": {"type": "integer"}}
+                },
+                "required": ["skills"],
+            }
+        },
+        responses={
+            204: OpenApiResponse(
+                response={},
+                description="Skills successfully deleted",
+            ),
+            400: OpenApiResponse(
+                description="Bad Request - Invalid input or niche not found"
+            ),
+        },
+        examples=[
+            OpenApiExample(
+                "Request Example",
+                description="Example request to delete skills from a freelancer",
+                value={"skills": [1, 2, 3]},
+            ),
+        ],
+    )
+    def delete(self, request, uuid):
+        freelancer = get_freelancer_profile_with_uuid(uuid)
+        skill_ids = request.GET.get("skills", "").split(",")
+
+        errors = []
+
+        @transaction.atomic
+        def create_freelancer_skill():
+            for skill_id in skill_ids:
+                try:
+                    skill = Skill.objects.get(id=skill_id)
+                    freelancer_skill = FreelancerSkill.objects.get(
+                        freelancer=freelancer, skill=skill
+                    )
+                    freelancer_skill.delete()
+                except Niche.DoesNotExist:
+                    errors.append(f"Niche with id {skill_id} does not exist.")
+                except Exception as e:
+                    errors.append(str(e))
+
+        create_freelancer_skill()
+
+        if errors:
+            return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({}, status=status.HTTP_204_NO_CONTENT)
+
+
+class AddNicheView(APIView):
+    @extend_schema(
+        summary="Add niche to a freelancer",
+        description="Add multiple niche to a freelancer's profile by passing a list of niche IDs.",
+        parameters=[
+            OpenApiParameter(
+                name="uuid",
+                description="UUID of the freelancer profile",
+                required=True,
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+            )
+        ],
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "niches": {"type": "array", "items": {"type": "integer"}}
+                },
+                "required": ["niches"],
+            }
+        },
+        responses={
+            201: OpenApiResponse(
+                response={},
+                description="Niches successfully added",
+            ),
+            400: OpenApiResponse(
+                description="Bad Request - Invalid input or niche not found"
+            ),
+        },
+        examples=[
+            OpenApiExample(
+                "Request Example",
+                description="Example request to add niches to a freelancer",
+                value={"niches": [1, 2, 3]},
+            ),
+            OpenApiExample(
+                "Response Example",
+                description="Example response after successfully adding niches",
+            ),
+        ],
+    )
+    def post(self, request, uuid):
+        freelancer = get_freelancer_profile_with_uuid(uuid)
+        niche_ids = request.data.get("niches", [])
+
+        # To make sure the user does not add more than 3 niches
+        niche_id_number = len(niche_ids)
+        niche_number = len(
+            FreelanceProfileSerializer(instance=freelancer).data["niches"]
+        )
+        total_niches = niche_id_number + niche_number
+        if total_niches > 3:
+            return Response(
+                {"error": "Maximum of 3 Niches Per user."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        errors = []
+        created_niches = []
+
+        @transaction.atomic
+        def create_freelancer_niche():
+            for niche_id in niche_ids:
+                try:
+                    niche = Niche.objects.get(id=niche_id)
+                    freelancer_niche, created = FreelancerNiche.objects.get_or_create(
+                        freelancer=freelancer, niche=niche
+                    )
+                    if created:
+                        created_niches.append(freelancer_niche.niche.name)
+                except Niche.DoesNotExist:
+                    errors.append(f"Niche with id {niche_id} does not exist.")
+                except Exception as e:
+                    errors.append(str(e))
+
+        create_freelancer_niche()
+
+        if errors:
+            return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(
+            {"created_niches": created_niches}, status=status.HTTP_201_CREATED
+        )
+
+
+class DeleteNicheView(APIView):
+    @extend_schema(
+        summary="Delete a freelancer's niche",
+        description="Delete multiple niches from a freelancer's profile by passing a list of niche IDs.",
+        parameters=[
+            OpenApiParameter(
+                name="uuid",
+                description="UUID of the freelancer profile",
+                required=True,
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+            ),
+            OpenApiParameter(
+                name="niches",
+                description="ID of niches to delete",
+                required=True,
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+            ),
+        ],
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "niches": {"type": "array", "items": {"type": "integer"}}
+                },
+                "required": ["niches"],
+            }
+        },
+        responses={
+            204: OpenApiResponse(
+                response={},
+                description="Niches successfully deleted",
+            ),
+            400: OpenApiResponse(
+                description="Bad Request - Invalid input or niche not found"
+            ),
+        },
+        examples=[
+            OpenApiExample(
+                "Request Example",
+                description="Example request to delete niches from a freelancer",
+                value={"niches": [1, 2, 3]},
+            ),
+        ],
+    )
+    def delete(self, request, uuid):
+        freelancer = get_freelancer_profile_with_uuid(uuid)
+        niche_ids = request.GET.get("niches", "").split(",")
+
+        errors = []
+
+        @transaction.atomic
+        def create_freelancer_niche():
+            for niche_id in niche_ids:
+                try:
+                    niche = Niche.objects.get(id=niche_id)
+                    freelancer_niche = FreelancerNiche.objects.get(
+                        freelancer=freelancer, niche=niche
+                    )
+                    freelancer_niche.delete()
+                except Niche.DoesNotExist:
+                    errors.append(f"Niche with id {niche_id} does not exist.")
+                except Exception as e:
+                    errors.append(str(e))
+
+        create_freelancer_niche()
+
+        if errors:
+            return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({}, status=status.HTTP_204_NO_CONTENT)

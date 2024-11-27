@@ -1,6 +1,24 @@
 from rest_framework import serializers
 from profile_management.serializers import UserDetailsSerializer
-from .models import Niche, Skill, FreelancerProfile, FreelancerSkill, FreelancerLink
+from .models import (
+    FreelancerNiche,
+    Niche,
+    Skill,
+    FreelancerProfile,
+    FreelancerSkill,
+    FreelancerLink,
+)
+
+
+def extract_values(ordered_dict_list, key):
+    """
+    Converts a list of OrderedDicts to a list of string values based on the specified key.
+
+    :param ordered_dict_list: List of OrderedDict objects
+    :param key: The key whose value needs to be extracted
+    :return: List of string values
+    """
+    return [item[key] for item in ordered_dict_list if key in item]
 
 
 class FreelanceSerializer(serializers.ModelSerializer):
@@ -31,7 +49,6 @@ class FreelanceProfileSerializer(serializers.ModelSerializer):
     """
 
     user = UserDetailsSerializer(read_only=True)
-    niche = serializers.PrimaryKeyRelatedField(queryset=Niche.objects.all())
 
     class Meta:
         model = FreelancerProfile
@@ -39,22 +56,27 @@ class FreelanceProfileSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "user",
-            "bio",
-            "niche",
-            "profile_pic",
             "first_name",
             "last_name",
+            "bio",
+            "about_me",
+            "location",
+            "profile_pic",
+            "resume",
             "links",
             "skills",
+            "niches",
             "created_at",
         ]
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation["niche"] = NicheSerializer(instance.niche).data
-        representation["skills"] = ListFreelancerSkillSerializer(
-            instance.skills, many=True
-        ).data
+        representation["niches"] = extract_values(
+            ListFreelancerNicheSerializer(instance.niches, many=True).data, "niche"
+        )
+        representation["skills"] = extract_values(
+            ListFreelancerSkillSerializer(instance.skills, many=True).data, "skill"
+        )
         return representation
 
 
@@ -68,6 +90,15 @@ class SkillSerializer(serializers.ModelSerializer):
     class Meta:
         model = Skill
         fields = ["id", "name"]
+
+
+class FreelancerNicheSerializer(serializers.ModelSerializer):
+    freelancer = FreelanceProfileSerializer(read_only=True)
+    niche = NicheSerializer(read_only=True)
+
+    class Meta:
+        model = FreelancerNiche
+        fields = ["id", "freelancer", "niche"]
 
 
 class FreelancerSkillSerializer(serializers.ModelSerializer):
@@ -88,4 +119,16 @@ class ListFreelancerSkillSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation["skill"] = SkillSerializer(instance.skill).data["name"]
+        return representation
+
+
+# For use in the FreelanceProfileSerializer
+class ListFreelancerNicheSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FreelancerNiche
+        fields = ["niche"]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["niche"] = NicheSerializer(instance.niche).data["name"]
         return representation

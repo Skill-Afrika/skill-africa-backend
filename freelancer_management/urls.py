@@ -1,6 +1,9 @@
 from django.urls import path
 from .views import (
+    AddNicheView,
     AddSkillsView,
+    DeleteNicheView,
+    DeleteSkillView,
     FreelanceRegistrationView,
     FreelancerProfileList,
     FreelancerProfileDetail,
@@ -35,6 +38,21 @@ urlpatterns = [
         "profiles/<str:uuid>/skills",
         AddSkillsView.as_view(),
         name="add-freelancer-skills",
+    ),
+    path(
+        "profiles/<str:uuid>/skills/delete",
+        DeleteSkillView.as_view(),
+        name="delete-freelancer-niches",
+    ),
+    path(
+        "profiles/<str:uuid>/niches",
+        AddNicheView.as_view(),
+        name="add-freelancer-niches",
+    ),
+    path(
+        "profiles/<str:uuid>/niches/delete",
+        DeleteNicheView.as_view(),
+        name="delete-freelancer-niches",
     ),
     path("niches", NicheListView.as_view(), name="niche-list"),
     path("niche", NicheCreateView.as_view(), name="niche-create"),

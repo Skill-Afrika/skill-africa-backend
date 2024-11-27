@@ -36,7 +36,7 @@ def registerUser(self, request, role):
     user = RegisterView.perform_create(self, serializer)
     refresh = RefreshToken.for_user(user)
     data = {
-        "user": serializer.data,
+        "user": {**serializer.data, "uuid": user.uuid},
         "refresh": str(refresh),
         "access": str(refresh.access_token),
     }
