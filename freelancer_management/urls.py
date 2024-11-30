@@ -15,11 +15,20 @@ from freelancer_management.views.profile import (
     FreelancerProfileDetail,
     FreelancerProfileList,
 )
-from freelancer_management.views.projects import ProjectCreateView
+from freelancer_management.views.projects import (
+    ProjectCreateView,
+    ProjectDeleteView,
+    ProjectListView,
+)
 from freelancer_management.views.skills import (
     AddSkillsView,
     DeleteSkillView,
     SkillListCreateView,
+)
+from freelancer_management.views.work_experience import (
+    WorkExperienceCreateView,
+    WorkExperienceDeleteView,
+    WorkExperienceListView,
 )
 
 urlpatterns = [
@@ -71,7 +80,33 @@ urlpatterns = [
     # Project urls
     path(
         "profiles/<str:uuid>/projects",
+        ProjectListView.as_view(),
+        name="project-list",
+    ),
+    path(
+        "profiles/<str:uuid>/project",
         ProjectCreateView.as_view(),
         name="project-create",
+    ),
+    path(
+        "profiles/<str:uuid>/project/<int:id>",
+        ProjectDeleteView.as_view(),
+        name="project-delete",
+    ),
+    # Work Experience Urls
+    path(
+        "profiles/<str:uuid>/work-experiences",
+        WorkExperienceListView.as_view(),
+        name="work-experience-list",
+    ),
+    path(
+        "profiles/<str:uuid>/work-experience",
+        WorkExperienceCreateView.as_view(),
+        name="work-experience-create",
+    ),
+    path(
+        "profiles/<str:uuid>/work-experience/<int:id>",
+        WorkExperienceDeleteView.as_view(),
+        name="work-experience-delete",
     ),
 ]
