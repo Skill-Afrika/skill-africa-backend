@@ -28,8 +28,8 @@ class DocumentationRegisterSerializer(serializers.ModelSerializer):
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["username", "email", "password", "role"]
-        extra_kwargs = {"password": {"write_only": True}}
+        fields = ["uuid", "username", "email", "password", "role"]
+        extra_kwargs = {"password": {"write_only": True}, "uuid": {"read_only": True}}
 
     def validate_username(self, username):
         username = get_adapter().clean_username(username)
