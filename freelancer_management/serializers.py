@@ -1,7 +1,9 @@
 from rest_framework import serializers
 from profile_management.serializers import UserDetailsSerializer
 from .models import (
+    FreelancerLanguage,
     FreelancerNiche,
+    Language,
     Niche,
     Project,
     Skill,
@@ -68,6 +70,7 @@ class FreelanceProfileSerializer(serializers.ModelSerializer):
             "links",
             "skills",
             "niches",
+            "languages",
             "created_at",
         ]
 
@@ -78,6 +81,10 @@ class FreelanceProfileSerializer(serializers.ModelSerializer):
         )
         representation["skills"] = extract_values(
             ListFreelancerSkillSerializer(instance.skills, many=True).data, "skill"
+        )
+        representation["languages"] = extract_values(
+            ListFreelancerLanguageSerializer(instance.languages, many=True).data,
+            "language",
         )
         return representation
 
@@ -91,6 +98,12 @@ class NicheSerializer(serializers.ModelSerializer):
 class SkillSerializer(serializers.ModelSerializer):
     class Meta:
         model = Skill
+        fields = ["id", "name"]
+
+
+class LanguageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Language
         fields = ["id", "name"]
 
 
@@ -121,6 +134,27 @@ class ListFreelancerSkillSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation["skill"] = SkillSerializer(instance.skill).data["name"]
+        return representation
+
+
+class FreelancerLanguageSerializer(serializers.ModelSerializer):
+    freelancer = FreelanceProfileSerializer(read_only=True)
+    language = LanguageSerializer(read_only=True)
+
+    class Meta:
+        model = FreelancerLanguage
+        fields = ["id", "freelancer", "language"]
+
+
+# For use in the FreelanceProfileSerializer
+class ListFreelancerLanguageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FreelancerLanguage
+        fields = ["language"]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["language"] = LanguageSerializer(instance.language).data["name"]
         return representation
 
 

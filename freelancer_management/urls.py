@@ -1,5 +1,10 @@
 from django.urls import path
 
+from freelancer_management.views.language import (
+    AddLanguageView,
+    DeleteLanguageView,
+    LanguageListCreateView,
+)
 from freelancer_management.views.links import (
     FreelancerLinkDetailView,
     FreelancerLinkListCreateView,
@@ -77,9 +82,21 @@ urlpatterns = [
     path(
         "profiles/<str:uuid>/skills/delete",
         DeleteSkillView.as_view(),
-        name="delete-freelancer-niches",
+        name="delete-freelancer-skills",
     ),
     path("skills", SkillListCreateView.as_view(), name="skill-list-create"),
+    # Skills urls
+    path(
+        "profiles/<str:uuid>/languages",
+        AddLanguageView.as_view(),
+        name="add-freelancer-languages",
+    ),
+    path(
+        "profiles/<str:uuid>/languages/delete",
+        DeleteLanguageView.as_view(),
+        name="delete-freelancer-languages",
+    ),
+    path("languages", LanguageListCreateView.as_view(), name="language-list-create"),
     # Niche urls
     path(
         "profiles/<str:uuid>/niches",
