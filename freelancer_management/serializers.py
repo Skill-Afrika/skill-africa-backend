@@ -139,7 +139,7 @@ class ListFreelancerNicheSerializer(serializers.ModelSerializer):
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = ["id", "name", "url", "freelancer"]
+        fields = ["id", "name", "url", "freelancer", "image", "image_public_id"]
 
 
 class WorkExperienceSerializer(serializers.ModelSerializer):

@@ -2,21 +2,16 @@ from datetime import timedelta
 from pathlib import Path
 import dj_database_url
 import os
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
 from dotenv import load_dotenv
 
 # Load .env values
 load_dotenv()
 
-
-cloudinary.config(
-    cloud_name="your-cloud-name",
-    api_key="your-api-key",
-    api_secret="your-api-secret"
-)
-
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": os.getenv("CLOUDINARY_CLOUD_NAME"),
+    "API_KEY": os.getenv("CLOUDINARY_API_KEY"),
+    "API_SECRET": os.getenv("CLOUDINARY_API_SECRET"),
+}
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

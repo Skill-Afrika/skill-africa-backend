@@ -30,8 +30,10 @@ class FreelancerProfile(ProfileBase):
     bio = models.CharField(max_length=60, blank=True, null=True)
     about_me = models.TextField(max_length=1200, blank=True, null=True)
     location = models.CharField(max_length=300, blank=True, null=True)
-    profile_pic = models.URLField(null=True, blank=True)  # Todo: Add cloudinary support
-    resume = models.URLField(null=True, blank=True)  # Todo: Add cloudinary support
+    profile_pic = models.URLField(null=True, blank=True)
+    profile_pic_public_id = models.CharField(max_length=255, blank=True, null=True)
+    resume = models.URLField(null=True, blank=True)
+    resume_public_id = models.CharField(max_length=255, blank=True, null=True)
     first_name = models.CharField(max_length=255, blank=True, null=True)
     last_name = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -97,6 +99,8 @@ class Project(models.Model):
     freelancer = models.ForeignKey(
         FreelancerProfile, on_delete=models.CASCADE, related_name="projects"
     )
+    image = models.URLField(null=True, blank=True)
+    image_public_id = models.CharField(max_length=255, blank=True, null=True)
     name = models.CharField(max_length=255)
     url = models.URLField()
 

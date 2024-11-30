@@ -14,8 +14,12 @@ from freelancer_management.views.profile import (
     FreelanceRegistrationView,
     FreelancerProfileDetail,
     FreelancerProfileList,
+    ProfilePictureDeleteView,
+    ProfilePictureUploadView,
 )
 from freelancer_management.views.projects import (
+    CoverImageDeleteView,
+    CoverImageUploadView,
     ProjectCreateView,
     ProjectDeleteView,
     ProjectListView,
@@ -40,6 +44,16 @@ urlpatterns = [
         "profiles/<str:uuid>",
         FreelancerProfileDetail.as_view(),
         name="freelancer_profile_details",
+    ),
+    path(
+        "profiles/picture/<str:uuid>/upload",
+        ProfilePictureUploadView.as_view(),
+        name="profile_picture_upload",
+    ),
+    path(
+        "profiles/picture/<str:uuid>/delete",
+        ProfilePictureDeleteView.as_view(),
+        name="profile_picture_delete",
     ),
     # Links urls
     path(
@@ -92,6 +106,16 @@ urlpatterns = [
         "profiles/<str:uuid>/project/<int:id>",
         ProjectDeleteView.as_view(),
         name="project-delete",
+    ),
+    path(
+        "profiles/<str:uuid>/project/coverimage/<int:id>/upload",
+        CoverImageUploadView.as_view(),
+        name="project_cover_image_upload",
+    ),
+    path(
+        "profiles/<str:uuid>/project/coverimage/<int:id>/delete",
+        CoverImageDeleteView.as_view(),
+        name="project_cover_image_delete",
     ),
     # Work Experience Urls
     path(

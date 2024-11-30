@@ -8,9 +8,10 @@ from drf_spectacular.types import OpenApiTypes
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from freelancer_management.models import Project
-from freelancer_management.serializers import ProjectSerializer
+from freelancer_management.serializers import FreelanceSerializer, ProjectSerializer
 from freelancer_management.views.profile import get_freelancer_profile_with_uuid
 from skill_africa.permissions import IsAuthenticatedWithJWT
+from skill_africa.utils import delete_file_from_cloudinary, upload_file_to_cloudinary
 
 
 @extend_schema_view(
@@ -138,3 +139,180 @@ class ProjectDeleteView(APIView):
         project = get_object_or_404(Project, id=id)
         project.delete()
         return Response({}, status=status.HTTP_204_NO_CONTENT)
+
+
+@extend_schema(
+    operation_id="project_cover_image_upload",
+    summary="Upload Cover Image for Project",
+    description=(
+        "Allows authenticated users to upload a cover image for their project using the project ID. "
+        "The file must be an image (JPEG or PNG) and will replace any existing cover image."
+    ),
+    request={
+        "multipart/form-data": {
+            "type": "object",
+            "properties": {
+                "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Image file to be uploaded (JPEG or PNG only).",
+                }
+            },
+            "required": ["image"],
+        }
+    },
+    responses={
+        201: OpenApiTypes.OBJECT,
+        400: OpenApiTypes.OBJECT,
+        401: OpenApiTypes.OBJECT,
+        500: OpenApiTypes.OBJECT,
+    },
+    examples=[
+        OpenApiExample(
+            "Successful Upload",
+            value={
+                "message": "File uploaded successfully",
+                "cover_image": "https://res.cloudinary.com/demo/image/upload/sample.jpg",
+            },
+            status_codes=["201"],
+        ),
+        OpenApiExample(
+            "Unsupported File Type",
+            value={"error": "Unsupported file type"},
+            status_codes=["400"],
+        ),
+        OpenApiExample(
+            "Unauthorized User",
+            value={"error": "User Unauthorized"},
+            status_codes=["401"],
+        ),
+    ],
+)
+class CoverImageUploadView(APIView):
+    permission_classes = [IsAuthenticatedWithJWT]
+    SUPPORTED_MIME_TYPES = ["image/jpeg", "image/png"]
+    MAX_FILE_SIZE_MB = 5
+
+    def post(self, request, uuid, id):
+        try:
+            file = request.FILES.get("image")
+            freelancer = get_freelancer_profile_with_uuid(uuid)
+            project = get_object_or_404(Project, id=id)
+
+            if not file:
+                return Response(
+                    {"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Check if the file type is supported
+            if file.content_type not in self.SUPPORTED_MIME_TYPES:
+                return Response(
+                    {"error": "Unsupported file type"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Check file size (convert MAX_FILE_SIZE_MB to bytes)
+            max_file_size_bytes = self.MAX_FILE_SIZE_MB * 1024 * 1024
+            if file.size > max_file_size_bytes:
+                return Response(
+                    {
+                        "error": f"File size exceeds the maximum limit of {self.MAX_FILE_SIZE_MB} MB."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            if request.user != freelancer.user:
+                return Response(
+                    {"error": "User Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED
+                )
+
+            # Delete any previous file
+            if project.image_public_id:
+                delete_file_from_cloudinary(project.image_public_id)
+
+            # Upload the file to Cloudinary
+            result = upload_file_to_cloudinary(file, folder="skill_afrika")
+            serializer = ProjectSerializer(
+                project,
+                data={
+                    "image_public_id": result["public_id"],
+                    "image": result["secure_url"],
+                },
+            )
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {
+                        "message": "File uploaded successfully",
+                        "cover_image": result["secure_url"],
+                    },
+                    status=status.HTTP_201_CREATED,
+                )
+            return Response(
+                {"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+@extend_schema(
+    operation_id="project_cover_image_delete",
+    summary="Delete Project Cover Image",
+    description=(
+        "Allows authenticated users to delete an existing cover image for an existing project using its ID. "
+        "If no cover image exists, the endpoint returns an appropriate error."
+    ),
+    responses={
+        204: None,
+        400: OpenApiTypes.OBJECT,
+        401: OpenApiTypes.OBJECT,
+        500: OpenApiTypes.OBJECT,
+    },
+    examples=[
+        OpenApiExample(
+            "Successful Deletion",
+            value={},
+            status_codes=["204"],
+        ),
+        OpenApiExample(
+            "No Cover Image",
+            value={"error": "Project has no cover image"},
+            status_codes=["400"],
+        ),
+        OpenApiExample(
+            "Unauthorized User",
+            value={"error": "User Unauthorized"},
+            status_codes=["401"],
+        ),
+    ],
+)
+class CoverImageDeleteView(APIView):
+    permission_classes = [IsAuthenticatedWithJWT]
+
+    def delete(self, request, uuid, id):
+        try:
+            freelancer = get_freelancer_profile_with_uuid(uuid)
+            project = get_object_or_404(Project, id=id)
+            if request.user != freelancer.user:
+                return Response(
+                    {"error": "User Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED
+                )
+
+            # Delete any file, if any
+            if project.image_public_id:
+                delete_file_from_cloudinary(project.image_public_id)
+                project.image = None
+                project.image_public_id = None
+
+                project.save()
+                return Response({}, status=status.HTTP_204_NO_CONTENT)
+            return Response(
+                {"error": "Project has no cover image"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
