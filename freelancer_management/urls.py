@@ -30,6 +30,8 @@ from freelancer_management.views.skills import (
     SkillListCreateView,
 )
 from freelancer_management.views.work_experience import (
+    ResumeDeleteView,
+    ResumeUploadView,
     WorkExperienceCreateView,
     WorkExperienceDeleteView,
     WorkExperienceListView,
@@ -132,5 +134,15 @@ urlpatterns = [
         "profiles/<str:uuid>/work-experience/<int:id>",
         WorkExperienceDeleteView.as_view(),
         name="work-experience-delete",
+    ),
+    path(
+        "profiles/resume/<str:uuid>/upload",
+        ResumeUploadView.as_view(),
+        name="resume_upload",
+    ),
+    path(
+        "profiles/resume/<str:uuid>/delete",
+        ResumeDeleteView.as_view(),
+        name="resume_delete",
     ),
 ]

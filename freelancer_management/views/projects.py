@@ -238,6 +238,7 @@ class CoverImageUploadView(APIView):
                     "image_public_id": result["public_id"],
                     "image": result["secure_url"],
                 },
+                partial=True,
             )
             if serializer.is_valid():
                 serializer.save()
