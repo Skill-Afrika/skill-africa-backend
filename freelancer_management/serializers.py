@@ -39,6 +39,24 @@ class FreelanceSerializer(serializers.ModelSerializer):
         }
 
 
+class NicheSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Niche
+        fields = ["id", "name"]
+
+
+class SkillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Skill
+        fields = ["id", "name"]
+
+
+class LanguageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Language
+        fields = ["id", "name"]
+
+
 class FreelancerLinkSerializer(serializers.ModelSerializer):
     class Meta:
         model = FreelancerLink
@@ -53,6 +71,16 @@ class FreelanceProfileSerializer(serializers.ModelSerializer):
     """
 
     user = UserDetailsSerializer(read_only=True)
+    niches = serializers.ListField(
+        child=serializers.IntegerField(), write_only=True, required=False
+    )
+    skills = serializers.ListField(
+        child=serializers.IntegerField(), write_only=True, required=False
+    )
+    languages = serializers.ListField(
+        child=serializers.IntegerField(), write_only=True, required=False
+    )
+    links = FreelancerLinkSerializer(many=True, required=False)
 
     class Meta:
         model = FreelancerProfile
@@ -88,23 +116,73 @@ class FreelanceProfileSerializer(serializers.ModelSerializer):
         )
         return representation
 
+    def update(self, instance, validated_data):
+        niches_data = validated_data.pop("niches", [])
+        skills_data = validated_data.pop("skills", [])
+        languages_data = validated_data.pop("languages", [])
+        links_data = validated_data.pop("links", [])
+        errors = []
 
-class NicheSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Niche
-        fields = ["id", "name"]
+        # Update freelancer profile fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
 
+        # Update niches
+        if niches_data:
+            # To make sure the user does not add more than 3 niches
+            niche_id_number = len(niches_data)
+            niche_number = len(FreelancerNiche.objects.filter(freelancer=instance))
+            total_niches = niche_id_number + niche_number
+            if total_niches > 3:
+                errors.append("Maximum of 3 Niches Per user.")
+            for niche_id in niches_data:
+                try:
+                    niche = Niche.objects.get(id=niche_id)
+                    FreelancerNiche.objects.get_or_create(
+                        freelancer=instance, niche=niche
+                    )
+                except Niche.DoesNotExist:
+                    errors.append(f"Niche with id {niche_id} does not exist.")
+                except Exception as e:
+                    errors.append(str(e))
 
-class SkillSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Skill
-        fields = ["id", "name"]
+        # Update skills
+        if skills_data:
+            for skill_id in skills_data:
+                try:
+                    skill = Skill.objects.get(id=skill_id)
+                    FreelancerSkill.objects.get_or_create(
+                        freelancer=instance, skill=skill
+                    )
+                except Skill.DoesNotExist:
+                    errors.append(f"Skill with id {skill_id} does not exist.")
+                except Exception as e:
+                    errors.append(str(e))
 
+        # Update languages
+        if languages_data:
+            for language_id in languages_data:
+                try:
+                    language = Language.objects.get(id=language_id)
+                    FreelancerLanguage.objects.get_or_create(
+                        freelancer=instance, language=language
+                    )
+                except Language.DoesNotExist:
+                    errors.append(f"Language with id {language_id} does not exist.")
+                except Exception as e:
+                    errors.append(str(e))
 
-class LanguageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Language
-        fields = ["id", "name"]
+        # Update links
+        if links_data:
+            for link_data in links_data:
+                FreelancerLink.objects.create(freelancer=instance, **link_data)
+
+        # Raise ValidationError if errors occurred
+        if errors:
+            raise serializers.ValidationError({"errors": errors})
+
+        return instance
 
 
 class FreelancerNicheSerializer(serializers.ModelSerializer):
