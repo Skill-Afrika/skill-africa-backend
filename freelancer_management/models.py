@@ -102,6 +102,9 @@ class Project(models.Model):
     image = models.URLField(null=True, blank=True)
     image_public_id = models.CharField(max_length=255, blank=True, null=True)
     name = models.CharField(max_length=255)
+    skills = models.CharField(max_length=255, default="")
+    description = models.TextField(default="")
+    tools = models.CharField(max_length=255, default="")
     url = models.URLField()
 
     def __str__(self):

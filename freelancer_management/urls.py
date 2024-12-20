@@ -19,8 +19,6 @@ from freelancer_management.views.profile import (
     FreelanceRegistrationView,
     FreelancerProfileDetail,
     FreelancerProfileList,
-    ProfilePictureDeleteView,
-    ProfilePictureUploadView,
 )
 from freelancer_management.views.projects import (
     CoverImageDeleteView,
@@ -51,16 +49,6 @@ urlpatterns = [
         "profiles/<str:uuid>",
         FreelancerProfileDetail.as_view(),
         name="freelancer_profile_details",
-    ),
-    path(
-        "profiles/picture/<str:uuid>/upload",
-        ProfilePictureUploadView.as_view(),
-        name="profile_picture_upload",
-    ),
-    path(
-        "profiles/picture/<str:uuid>/delete",
-        ProfilePictureDeleteView.as_view(),
-        name="profile_picture_delete",
     ),
     # Links urls
     path(

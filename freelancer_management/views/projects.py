@@ -51,7 +51,13 @@ class ProjectCreateView(APIView):
         request={
             "application/json": {
                 "type": "object",
-                "properties": {"name": {"type": "string"}, "url": {"type": "string"}},
+                "properties": {
+                    "name": {"type": "string"},
+                    "url": {"type": "string"},
+                    "skills": {"type": "string"},
+                    "tools": {"type": "string"},
+                    "description": {"type": "string"},
+                },
                 "required": ["name", "url"],
             }
         },
@@ -70,6 +76,9 @@ class ProjectCreateView(APIView):
                 value={
                     "name": "Learn 3 Play",
                     "url": "https://learn3play.simondevz.xyz",
+                    "skills": "A comma seperated list of skills used e.g backend development, frontend development, designing",
+                    "tools": "A comma seperated list of tools used e.g figma, react, nodeJs",
+                    "description": "Description of the project (Best to send in markdown format)",
                 },
             ),
         ],
@@ -77,6 +86,9 @@ class ProjectCreateView(APIView):
     def post(self, request, uuid):
         name = request.data.get("name", "")
         url = request.data.get("url", "")
+        skills = request.data.get("skills", "")
+        tools = request.data.get("tools", "")
+        description = request.data.get("description", "")
         freelancer = get_freelancer_profile_with_uuid(uuid)
 
         # Only the profile owner can create a project
@@ -86,7 +98,14 @@ class ProjectCreateView(APIView):
             )
 
         serializer = ProjectSerializer(
-            data={"name": name, "url": url, "freelancer": freelancer.id}
+            data={
+                "name": name,
+                "url": url,
+                "freelancer": freelancer.id,
+                "skills": skills,
+                "tools": tools,
+                "description": description,
+            }
         )
         if serializer.is_valid():
             project = serializer.save()
