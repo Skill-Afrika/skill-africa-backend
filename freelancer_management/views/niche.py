@@ -11,7 +11,6 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from freelancer_management.views.profile import get_freelancer_profile_with_uuid
 from skill_africa.permissions import IsAdmin
 from freelancer_management.serializers import (
-    FreelanceProfileSerializer,
     NicheSerializer,
 )
 from freelancer_management.models import FreelancerNiche, Niche
@@ -94,17 +93,14 @@ class AddNicheView(APIView):
         niche_ids = request.data.get("niches", [])
 
         # To make sure the user does not add more than 3 niches
-        niche_id_number = len(niche_ids)
-        niche_number = len(
-            FreelanceProfileSerializer(instance=freelancer).data["niches"]
-        )
-        total_niches = niche_id_number + niche_number
-        if total_niches > 3:
+        if len(niche_ids) > 3:
             return Response(
                 {"error": "Maximum of 3 Niches Per user."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # delete former niches
+        FreelancerNiche.objects.filter(freelancer=freelancer).delete()
         errors = []
         created_niches = []
 
@@ -117,7 +113,12 @@ class AddNicheView(APIView):
                         freelancer=freelancer, niche=niche
                     )
                     if created:
-                        created_niches.append(freelancer_niche.niche.name)
+                        created_niches.append(
+                            {
+                                "name": freelancer_niche.niche.name,
+                                "id": freelancer_niche.niche.id,
+                            }
+                        )
                 except Niche.DoesNotExist:
                     errors.append(f"Niche with id {niche_id} does not exist.")
                 except Exception as e:
@@ -186,7 +187,7 @@ class DeleteNicheView(APIView):
         errors = []
 
         @transaction.atomic
-        def create_freelancer_niche():
+        def delete_freelancer_niche():
             for niche_id in niche_ids:
                 try:
                     niche = Niche.objects.get(id=niche_id)
@@ -199,7 +200,7 @@ class DeleteNicheView(APIView):
                 except Exception as e:
                     errors.append(str(e))
 
-        create_freelancer_niche()
+        delete_freelancer_niche()
 
         if errors:
             return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)

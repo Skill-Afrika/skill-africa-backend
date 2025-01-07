@@ -105,10 +105,12 @@ class FreelanceProfileSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation["niches"] = extract_values(
-            ListFreelancerNicheSerializer(instance.niches, many=True).data, "niche"
+            ListFreelancerNicheSerializer(instance.niches, many=True).data,
+            "niche",
         )
         representation["skills"] = extract_values(
-            ListFreelancerSkillSerializer(instance.skills, many=True).data, "skill"
+            ListFreelancerSkillSerializer(instance.skills, many=True).data,
+            "skill",
         )
         representation["languages"] = extract_values(
             ListFreelancerLanguageSerializer(instance.languages, many=True).data,
@@ -131,11 +133,10 @@ class FreelanceProfileSerializer(serializers.ModelSerializer):
         # Update niches
         if niches_data:
             # To make sure the user does not add more than 3 niches
-            niche_id_number = len(niches_data)
-            niche_number = len(FreelancerNiche.objects.filter(freelancer=instance))
-            total_niches = niche_id_number + niche_number
-            if total_niches > 3:
+            if len(niches_data) > 3:
                 errors.append("Maximum of 3 Niches Per user.")
+
+            FreelancerNiche.objects.filter(freelancer=instance).delete()
             for niche_id in niches_data:
                 try:
                     niche = Niche.objects.get(id=niche_id)
@@ -149,6 +150,7 @@ class FreelanceProfileSerializer(serializers.ModelSerializer):
 
         # Update skills
         if skills_data:
+            FreelancerSkill.objects.filter(freelancer=instance).delete()
             for skill_id in skills_data:
                 try:
                     skill = Skill.objects.get(id=skill_id)
@@ -162,6 +164,7 @@ class FreelanceProfileSerializer(serializers.ModelSerializer):
 
         # Update languages
         if languages_data:
+            FreelancerLanguage.objects.filter(freelancer=instance).delete()
             for language_id in languages_data:
                 try:
                     language = Language.objects.get(id=language_id)
@@ -175,6 +178,7 @@ class FreelanceProfileSerializer(serializers.ModelSerializer):
 
         # Update links
         if links_data:
+            FreelancerLink.objects.filter(freelancer=instance).delete()
             for link_data in links_data:
                 FreelancerLink.objects.create(freelancer=instance, **link_data)
 
@@ -211,7 +215,10 @@ class ListFreelancerSkillSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation["skill"] = SkillSerializer(instance.skill).data["name"]
+        representation["skill"] = {
+            "skill": SkillSerializer(instance.skill).data["name"],
+            "id": SkillSerializer(instance.skill).data["id"],
+        }
         return representation
 
 
@@ -232,7 +239,10 @@ class ListFreelancerLanguageSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation["language"] = LanguageSerializer(instance.language).data["name"]
+        representation["language"] = {
+            "language": LanguageSerializer(instance.language).data["name"],
+            "id": LanguageSerializer(instance.language).data["id"],
+        }
         return representation
 
 
@@ -244,7 +254,10 @@ class ListFreelancerNicheSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation["niche"] = NicheSerializer(instance.niche).data["name"]
+        representation["niche"] = {
+            "niche": NicheSerializer(instance.niche).data["name"],
+            "id": NicheSerializer(instance.niche).data["id"],
+        }
         return representation
 
 
