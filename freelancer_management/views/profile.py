@@ -8,8 +8,6 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_spectacular.utils import (
     extend_schema,
     extend_schema_view,
-    OpenApiParameter,
-    OpenApiExample,
     OpenApiResponse,
 )
 from rest_framework.response import Response
@@ -22,10 +20,6 @@ from freelancer_management.serializers import (
 )
 from freelancer_management.models import FreelancerProfile
 from freelancer_management.filters import CustomOrderingFilter, CustomSearchFilter
-from skill_africa.utils import (
-    delete_file_from_cloudinary,
-    upload_file_to_cloudinary,
-)
 
 
 def get_freelancer_profile_with_uuid(uuid):
