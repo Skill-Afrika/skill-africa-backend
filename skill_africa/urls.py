@@ -20,6 +20,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('api.urls')),
+    path('api/v1/', include('skill_africa.urls-v1')), # For seperating diffrent versions of the api in the future. For adding url paths please do so in urls-v1.py
 ]
 

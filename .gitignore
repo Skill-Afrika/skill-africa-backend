@@ -58,7 +58,10 @@ pip-delete-this-directory.txt
 .env.production
 .env.test
 .venv/
+.vscode
 venv/
+env/
+virtual/
 ENV/
 env.bak/
 venv.bak/
@@ -138,3 +141,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# DO NOT TRACK MIGRATIONS
+migrations/
