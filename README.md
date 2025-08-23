@@ -46,7 +46,10 @@ classDiagram
         Django REST Framework
         /api/v1/ Endpoints
         User Management
-        Skill Tracking
+        freelancer,Admins
+        events
+        
+
     }
     class Application {
         Django Application
