@@ -11,6 +11,7 @@ The **Skill Africa Backend** is the server-side component of the Skill Africa pl
 ## Table of Contents
 
 - [Features](#features)
+- [Architecture](#architecture)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Configuration](#configuration)
@@ -31,6 +32,56 @@ The **Skill Africa Backend** is the server-side component of the Skill Africa pl
 - Scalable architecture hosted on Render.
 
 ## Prerequisites
+## Architecture
+
+The Skill Africa Backend is a Django-based REST API with integrations for authentication, email, caching, and database storage. Below is the architecture diagram:
+
+```mermaid
+classDiagram
+    class Client {
+        Frontend / Mobile Apps
+        Sends HTTP Requests
+    }
+    class API {
+        Django REST Framework
+        /api/v1/ Endpoints
+        User Management
+        Skill Tracking
+    }
+    class Application {
+        Django Application
+        Business Logic
+        Authentication
+    }
+    class GoogleSSO {
+        OAuth 2.0
+        User Authentication
+    }
+    class Mailchimp {
+        Email Campaigns
+        API Integration
+    }
+    class Redis {
+        Caching Layer
+        Session Management
+    }
+    class PostgreSQL {
+        Database
+        User Data
+        Skill Data
+    }
+    class Render {
+        Cloud Hosting
+        Deployment
+    }
+    Client --> API : HTTP Requests
+    API --> Application : Handles Requests
+    Application --> GoogleSSO : Authenticates Users
+    Application --> Mailchimp : Sends Emails
+    Application --> Redis : Caches Data
+    Application --> PostgreSQL : Stores Data
+    Application --> Render : Deployed On
+ ```
 
 Before setting up the project, ensure you have the following installed:
 - **Python** (3.8 or higher)
