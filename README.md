@@ -103,13 +103,13 @@ Before setting up the project, ensure you have the following installed:
 
 ```bash
 python -m venv venv
-venv\Scripts\activate.bat
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
 3. Install the required packages using the following command:
 
 ```bash
-pip install -r requirements.txt # On Windows: venv\Scripts\activate
+pip install -r requirements.txt 
 ```
 ## Configuration
 1. Set up your dotenv file to manage environment variables:
