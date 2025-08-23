@@ -118,14 +118,13 @@ pip install -r requirements.txt # On Windows: venv\Scripts\activate
    - Add the following variables to the `.env` file:
      ```plaintext
         SECRET_KEY=iZfkT41muRKOhBn7MSShrR7bx0x8thAorazQikq65wLgwSVrMwACNY6xsj9VuuEZ0AKpHQtt8iFYSxMRUE4SF1gfcVNkBLNRqLBo
-        DATABASE_URL=postgresql://skill_afrika:MO91YuwcAr2B8UvLmnA7Nsonx4REDm7j@dpg-crg97qd6l47c73dtl3og-a.oregon-postgres.render.com/skill_afrika_t56u
-        REFRESH_TOKEN_LIFETIME_DAYS=7
+        DATABASE_URL=postgresql://skill_afrika:ozA65p5qOOAivCZ6NhzZYA1UM7zGFuRO@dpg-d2kpedp5pdvs739tmmcg-a.oregon-postgres.render.com/skill_afrika_5asd        REFRESH_TOKEN_LIFETIME_DAYS=7
         ACCESS_TOKEN_LIFETIME_HOURS=24
         MAILCHIMP_API_KEY=md-nXOYM71MRBIYqy0IhxY5cQ
         DEBUG=TRUE
         REDIS_LOCATION=redis://default:qc986b4pxP2BrJWd6nsGP107aPS0c33X@redis-16075.c8.us-east-1-4.ec2.redns.redis-cloud.com:16075
         GOOGLE_CLIENT_SECRET_JSON='{"web":{"client_id":"308478738375-6pqe98ism65mlvhv3nth9qejqmf6ijt7.apps.googleusercontent.com","project_id":"skill-afrika","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"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","redirect_uris":["http://127.0.0.1:8000/api/v1/sso/google_sso/callback/"],"javascript_origins":["http://127.0.0.1:8000"]}}'
-     ```
+    ```
 
 2. Run Migrations to set up the initial database schema:
 
