@@ -128,11 +128,18 @@ To set up the project locally, follow the steps in the README.md and Configurati
 
 To maintain consistency and quality, adhere to the following tools and guidelines:
 
-*   black .
-    
-*   flake8 .
-    
-*   isort .
+Black: Code formatter for consistent style
+```bash
+black .
+```
+Flake8: Linter for catching code issues
+```bash
+flake8 .
+```
+isort: Sorts imports for consistency.
+```bash
+isort .
+```
     
 *   **pre-commit**: Automatically runs linters and formatters before commits.
     
