@@ -1,20 +1,54 @@
-# skill-africa-backend
+# Skill Africa Backend Stack 
 
-Backend part of Skill Africa branding
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/Skill-Afrika/skill-africa-backend/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/)
+[![Django Version](https://img.shields.io/badge/django-4.2%2B-blue)](https://www.djangoproject.com/)
+[![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-## Basic Django Setup Guide
+The **Skill Africa Backend** is the server-side component of the Skill Africa platform, a web application designed to empower users through skill development and training. Built with Django and PostgreSQL, it provides a robust API for user management, authentication (including Google SSO), and integration with third-party services like Mailchimp and Redis.
 
-This will guide you on getting started on the Skill Africa Backend part
+## Table of Contents
+
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Running the Project](#running-the-project)
+- [Testing](#testing)
+- [Tooling](#tooling)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Features
+
+- RESTful API for user management and skill tracking.
+- Google SSO integration for secure authentication.
+- Mailchimp integration for email campaigns.
+- Redis for caching and performance optimization.
+- PostgreSQL as the primary database.
+- Environment variable management with `python-dotenv`.
+- Scalable architecture hosted on Render.
+
+## Prerequisites
+
+Before setting up the project, ensure you have the following installed:
+- **Python** (3.8 or higher)
+- **Git**
+- **PostgreSQL** (local or cloud-based, e.g., Render)
+- **Redis** (local or cloud-based, e.g., Redis Cloud)
+- A code editor (e.g., VS Code, PyCharm)
+- (Optional) Docker for containerized development
 
 ## Installation
 
-1. Clone the repository to your PC:
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/Skill-Afrika/skill-africa-backend.git
+   cd skill-africa-backend
+   ```
 
-```bash
-git clone https://github.com/Skill-Afrika/skill-africa-backend.git
-```
-
-2. Open the project in your preferred code editor and create a virtual environment and activate it:
+2. Create and Activate a Virtual Environment
 
 ```bash
 python -m venv venv
@@ -24,10 +58,10 @@ venv\Scripts\activate.bat
 3. Install the required packages using the following command:
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt # On Windows: venv\Scripts\activate
 ```
-
-4. Set up your dotenv file to manage environment variables:
+## Configuration
+1. Set up your dotenv file to manage environment variables:
 
    - Create a file named `.env` in the root directory of the project.
    - Add the following variables to the `.env` file:
@@ -42,15 +76,38 @@ pip install -r requirements.txt
         GOOGLE_CLIENT_SECRET_JSON='{"web":{"client_id":"308478738375-6pqe98ism65mlvhv3nth9qejqmf6ijt7.apps.googleusercontent.com","project_id":"skill-afrika","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"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","redirect_uris":["http://127.0.0.1:8000/api/v1/sso/google_sso/callback/"],"javascript_origins":["http://127.0.0.1:8000"]}}'
      ```
 
-5. Run Migrations to set up the initial database schema:
+2. Run Migrations to set up the initial database schema:
 
 ```bash
 python manage.py makemigrations
 python manage.py migrate
 ```
+3. Testing
 
-6. Start the development server:
+```bash
+pip install coverage
+coverage run manage.py test
+coverage report
+```
+
+4. Start the development server:
 
 ```bash
 python manage.py runserver
 ```
+## Tooling 
+The project uses the following tools to maintain code quality:
+Black: Code formatter for consistent style
+```bash
+black .
+```
+Flake8: Linter for catching code issues
+```bash
+flake8 .
+```
+isort: Sorts imports for consistency.
+```bash
+isort .
+```
+##  contributing 
+see Contributing.Md
