@@ -122,7 +122,7 @@ pip install -r requirements.txt
         ACCESS_TOKEN_LIFETIME_HOURS=24
         MAILCHIMP_API_KEY=md-nXOYM71MRBIYqy0IhxY5cQ
         DEBUG=TRUE
-        REDIS_LOCATION=redis://default:qc986b4pxP2BrJWd6nsGP107aPS0c33X@redis-16075.c8.us-east-1-4.ec2.redns.redis-cloud.com:16075
+        REDIS_LOCATION=redis://default:Nrw8s4P5O2kDQILhlFY1OpsDWaYVNI7T@redis-12288.c10.us-east-1-3.ec2.redns.redis-cloud.com:12288
         GOOGLE_CLIENT_SECRET_JSON='{"web":{"client_id":"308478738375-6pqe98ism65mlvhv3nth9qejqmf6ijt7.apps.googleusercontent.com","project_id":"skill-afrika","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"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","redirect_uris":["http://127.0.0.1:8000/api/v1/sso/google_sso/callback/"],"javascript_origins":["http://127.0.0.1:8000"]}}'
     ```
 
