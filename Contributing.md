@@ -6,6 +6,7 @@ Thank you for considering contributing to the **Skill Africa Backend**! We welco
 
 - [Code of Conduct](#code-of-conduct)
 - [How to Contribute](#how-to-contribute)
+- [Branching Strategy](#branching-strategy)
 - [Development Setup](#development-setup)
 - [Code Style and Quality](#code-style-and-quality)
 - [Testing](#testing)
@@ -74,21 +75,9 @@ We welcome contributions in the form of bug fixes, new features, documentation i
         
     *   Provide a clear title and description of your changes, referencing any related issues (e.g., Fixes #123).
 
-
-
-##  Development Setup
-
-To set up the project locally, follow the steps in the README.md and Configuration sections. Key steps include:
-
-*   python -m venv venvsource venv/bin/activate # On Windows: venv\\Scripts\\activatepip install -r requirements.txt
-    
-*   Set up environment variables in a .env file (see README.md).
-    
-*   python manage.py makemigrationspython manage.py migrate
-    
-*   python manage.py runserver
-
-  ```mermaid
+## Branching Strategy
+We use a Gitflow-based branching strategy to manage code changes effectively. The diagram below illustrates the workflow:
+ ```mermaid
   gitGraph
    commit id: "Initial"
    branch develop
@@ -119,6 +108,20 @@ To set up the project locally, follow the steps in the README.md and Configurati
    checkout develop
    merge hotfix/bugfix
  ```
+
+
+
+##  Development Setup
+
+To set up the project locally, follow the steps in the README.md and Configuration sections. Key steps include:
+
+*   python -m venv venvsource venv/bin/activate # On Windows: venv\\Scripts\\activatepip install -r requirements.txt
+    
+*   Set up environment variables in a .env file (see README.md).
+    
+*   python manage.py makemigrationspython manage.py migrate
+    
+*   python manage.py runserver
     
 
 ## Code Style and Quality
