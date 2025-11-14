@@ -72,12 +72,12 @@ const queryUsers = async <Key extends keyof User>(
 
 /**
  * Get user by id
- * @param {ObjectId} id
+ * @param {string} id
  * @param {Array<Key>} keys
  * @returns {Promise<Pick<User, Key> | null>}
  */
 const getUserById = async <Key extends keyof User>(
-  id: number,
+  id: string,
   keys: Key[] = [
     'id',
     'email',
@@ -122,12 +122,12 @@ const getUserByEmail = async <Key extends keyof User>(
 
 /**
  * Update user by id
- * @param {ObjectId} userId
+ * @param {string} userId
  * @param {Object} updateBody
  * @returns {Promise<User>}
  */
 const updateUserById = async <Key extends keyof User>(
-  userId: number,
+  userId: string,
   updateBody: Prisma.UserUpdateInput,
   keys: Key[] = ['id', 'email', 'name', 'role'] as Key[]
 ): Promise<Pick<User, Key> | null> => {
@@ -148,10 +148,10 @@ const updateUserById = async <Key extends keyof User>(
 
 /**
  * Delete user by id
- * @param {ObjectId} userId
+ * @param {string} userId
  * @returns {Promise<User>}
  */
-const deleteUserById = async (userId: number): Promise<User> => {
+const deleteUserById = async (userId: string): Promise<User> => {
   const user = await getUserById(userId);
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');

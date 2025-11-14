@@ -2,20 +2,26 @@ import httpStatus from 'http-status';
 import catchAsync from '../utils/catchAsync';
 import { authService, userService, tokenService, emailService } from '../services';
 import exclude from '../utils/exclude';
-import { User } from '@prisma/client';
+import { Role, User } from '@prisma/client';
 
 const register = catchAsync(async (req, res) => {
-  const { email, password } = req.body;
-  const user = await userService.createUser(email, password);
+  const { email, password, name, role } = req.body;
+  const actualRole = role.toLowerCase() === 'admin' ? Role.ADMIN : Role.USER;
+  const user = await userService.createUser(
+    email,
+    password,
+    name && name,
+    actualRole && (actualRole as Role)
+  );
   const userWithoutPassword = exclude(user, ['password', 'createdAt', 'updatedAt']);
-  const tokens = await tokenService.generateAuthTokens(user);
+  const tokens = await tokenService.generateAuthTokens({ id: String(user.id) });
   res.status(httpStatus.CREATED).send({ user: userWithoutPassword, tokens });
 });
 
 const login = catchAsync(async (req, res) => {
   const { email, password } = req.body;
   const user = await authService.loginUserWithEmailAndPassword(email, password);
-  const tokens = await tokenService.generateAuthTokens(user);
+  const tokens = await tokenService.generateAuthTokens({ id: String(user.id) });
   res.send({ user, tokens });
 });
 
