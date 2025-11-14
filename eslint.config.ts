@@ -4,8 +4,13 @@ import tsparser from '@typescript-eslint/parser';
 import prettier from 'eslint-plugin-prettier';
 
 const config = [
+  // Use the flat config `ignores` property instead of a standalone .eslintignore file.
+  // This prevents the deprecation warning and keeps ESLint from traversing build/ and other generated folders.
   {
-    files: ['**/*.ts', '**/*.tsx'],
+    ignores: ['build/**', 'node_modules/**', 'coverage/**', '.env', '.vscode/**', '.DS_Store']
+  },
+  {
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
 
     languageOptions: {
       parser: tsparser,

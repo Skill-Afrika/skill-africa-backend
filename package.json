@@ -6,7 +6,6 @@
   "repository": "https://github.com/Skill-Afrika/skill-africa-backend#readme",
   "author": "Abdurrahman Babayemi",
   "license": "MIT",
-  "type": "module",
   "scripts": {
     "start": "pnpm build && pm2 start ecosystem.config.json --no-daemon",
     "dev": "cross-env NODE_ENV=development nodemon src/index.ts",
