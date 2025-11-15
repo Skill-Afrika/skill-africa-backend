@@ -3,33 +3,41 @@ name: Deployment Pipeline
 on:
   push:
     branches:
-      - migrate-to-node
-      - main
+      - '*'
   pull_request:
     branches:
-      - main
+      - '*'
 
 jobs:
   simple-ci:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [22]
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
         with:
-          node-version: '23'
+          version: 10
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm install
+        run: pnpm install --frozen-lockfile
 
       - name: Run linter
-        run: npm run lint:fix && npm run lint
+        run: pnpm lint
 
       - name: Run prettier
-        run: npm run prettier:fix && npm run prettier
+        run: pnpm prettier
 
       - name: Build project
-        run: npm run build
+        run: pnpm build
