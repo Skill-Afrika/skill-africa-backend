@@ -16,4 +16,9 @@ RUN pnpm install --frozen-lockfile --prefer-offline
 
 COPY --chown=node:node . .
 
+RUN pnpm run build
+
 EXPOSE 3000
+
+# Start the app
+CMD ["node", "build/index.js"]
