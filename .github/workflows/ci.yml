@@ -3,6 +3,7 @@ name: Deployment Pipeline
 on:
   push:
     branches:
+      - migrate-to-node
       - main
   pull_request:
     branches:
