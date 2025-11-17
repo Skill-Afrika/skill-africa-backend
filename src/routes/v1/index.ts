@@ -36,4 +36,8 @@ if (config.env === 'development') {
   });
 }
 
+router.get('/', (req, res) => {
+  res.json({ message: 'Welcome to Skill Africa API v1' });
+});
+
 export default router;
