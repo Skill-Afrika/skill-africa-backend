@@ -7,9 +7,9 @@
   "author": "Abdurrahman Babayemi",
   "license": "MIT",
   "scripts": {
-    "start": "pnpm build && pm2 start ecosystem.config.json --no-daemon",
+    "start": "pnpm build && pm2 start ecosystem.config.json --no-daemon --env ${NODE_ENV}",
     "dev": "cross-env NODE_ENV=development nodemon src/index.ts",
-    "test": "docker-compose -f docker-compose.only-db-test.yml up -d && pnpm db:push && jest -i --colors --verbose --detectOpenHandles && docker-compose -f docker-compose.only-db-test.yml down",
+    "test": "cross-env NODE_ENV=test pnpm db:push && jest -i --colors --verbose --detectOpenHandles",
     "test:watch": "docker-compose -f docker-compose.only-db-test.yml up -d && pnpm db:push && jest -i --watchAll && docker-compose -f docker-compose.only-db-test.yml down",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
