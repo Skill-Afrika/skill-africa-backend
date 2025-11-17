@@ -15,6 +15,9 @@ const swaggerDef = {
   servers: [
     {
       url: `http://localhost:${config.port}/v1`
+    },
+    {
+      url: `${config.env === 'development' ? config.apiUrls.devApiUrl : config.apiUrls.prodApiUrl}/v1`
     }
   ]
 };

@@ -57,5 +57,9 @@ export default {
       }
     },
     from: envVars.EMAIL_FROM
+  },
+  apiUrls: {
+    devApiUrl: envVars.DEV_API_URL,
+    prodApiUrl: envVars.PROD_API_URL
   }
 };
